@@ -1,5 +1,4 @@
 import Navbar from "./Navbar";
-import axie from "../tile.jpeg";
 import { useLocation, useParams } from 'react-router-dom';
 import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
@@ -8,7 +7,7 @@ import { useState } from "react";
 export default function NFTPage (props) {
 
 const [data, updateData] = useState({});
-const [dataFetched, updateDataFetched] = useState(false);
+const [dataFetched, setIfDataFetched] = useState(false);
 const [message, updateMessage] = useState("");
 const [currAddress, updateCurrAddress] = useState("0x");
 
@@ -38,7 +37,7 @@ async function getNFTData(tokenId) {
     }
     console.log(item);
     updateData(item);
-    updateDataFetched(true);
+    setIfDataFetched(true);
     console.log("address", addr)
     updateCurrAddress(addr);
 }
@@ -49,13 +48,14 @@ async function buyNFT(tokenId) {
         //After adding your Hardhat network to your metamask, this code will get providers and signers
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
+        const dateInSecs = Math.floor(new Date().getTime() / 1000);
 
         //Pull the deployed contract instance
         let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer);
         const salePrice = ethers.utils.parseUnits(data.price, 'ether')
         updateMessage("Buying the NFT... Please Wait (Upto 5 mins)")
         //run the executeSale function
-        let transaction = await contract.executeSale(tokenId, {value:salePrice});
+        let transaction = await contract.executeSale(tokenId,dateInSecs, {value:salePrice});
         await transaction.wait();
 
         alert('You successfully bought the NFT!');
@@ -73,10 +73,13 @@ async function buyNFT(tokenId) {
 
     return(
         <div style={{"min-height":"100vh"}}>
-            <Navbar></Navbar>
             <div className="flex ml-20 mt-20">
                 <img src={data.image} alt="" className="w-2/5" />
                 <div className="text-xl ml-20 space-y-8 text-white shadow-2xl rounded-lg border-2 p-5">
+                    <div>
+                        Token ID: {data.tokenId}
+                    </div>
+                    
                     <div>
                         Name: {data.name}
                     </div>
@@ -92,6 +95,7 @@ async function buyNFT(tokenId) {
                     <div>
                         Seller: <span className="text-sm">{data.seller}</span>
                     </div>
+
                     <div>
                     { currAddress == data.owner || currAddress == data.seller ?
                         <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => buyNFT(tokenId)}>Buy this NFT</button>

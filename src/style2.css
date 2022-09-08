@@ -1,0 +1,120 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: #fff;
+   
+}
+
+.Mission{
+    width: 100%;
+    padding: 78px 0px;
+    
+}
+
+.about-text{
+    width: 1000px;
+    
+}
+.Main{
+    width:1130px;
+    max-width: 95%;
+    display: flex;
+    align-items: center;
+    justify-content:space-around;
+     
+}
+.about-text h1{
+    color: #fff;
+    font-size: 80px;
+    text-transform: capitalize;
+    margin-bottom: 20px;
+    
+}
+.navbar{
+    width: 85%;
+    margin: auto;
+    padding: 35px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+}
+.logo{
+    width: 120px;
+    cursor: pointer;
+}
+.navbar ul li {
+    list-style: none;
+    display: inline-block;
+    margin: 0 20px;
+    position: relative;
+    
+}
+
+.navbar ul li a{
+text-decoration: none;
+color: #fff;
+text-transform: uppercase;
+
+}
+.navbar ul li::after{
+    content: "";
+    height: 3px;
+    width: 0;
+    background: #fff;
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    transition: 0.5s;
+    
+}
+
+.navbar ul li:hover::after{
+   width: 100%; 
+   
+}
+
+.content{
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    color:#fff;
+   
+}
+
+.content h1{
+    font-size: 70px;
+    margin-top: 80px;
+}
+.content p{
+    margin: 20px auto;
+    font-weight: 100;
+    line-height: 25px;
+
+}
+button{
+  width: 200px;
+  padding: 15px 0;
+  text-align: center;
+  margin: 20px 10px;
+  border-radius: 25px;
+  font-weight: bold;
+  border: 2px solid #fff;
+  background: transparent;
+  color:#fff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+}
+.banner{
+    
+    background-image:linear-gradient(rgba(0, 0, 0, 0.75),rgba(0,0,0,0.75));
+}
+p{
+    font-size: 20px;
+    word-spacing: 10px;
+}

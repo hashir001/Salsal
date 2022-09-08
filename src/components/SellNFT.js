@@ -28,7 +28,7 @@ export default function SellNFT () {
         }
     }
 
-    //This function uploads the metadata to IPDS
+    //This function uploads the metadata to IPFS
     async function uploadMetadataToIPFS() {
         const {name, description, price} = formParams;
         //Make sure that none of the fields are empty
@@ -36,7 +36,10 @@ export default function SellNFT () {
             return;
 
         const nftJSON = {
-            name, description, price, image: fileURL
+            name, 
+            description,
+            price,
+            image: fileURL
         }
 
         try {
@@ -54,9 +57,9 @@ export default function SellNFT () {
 
     async function listNFT(e) {
         e.preventDefault();
-
         //Upload data to IPFS
         try {
+            //Upload metadata to ipfs
             const metadataURL = await uploadMetadataToIPFS();
             //After adding your Hardhat network to your metamask, this code will get providers and signers
             const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -71,6 +74,9 @@ export default function SellNFT () {
             let listingPrice = await contract.getListPrice()
             listingPrice = listingPrice.toString()
 
+            console.log("Price: " + price)
+            console.log("Listing: " + listingPrice)
+
             //actually create the NFT
             let transaction = await contract.createToken(metadataURL, price, { value: listingPrice })
             await transaction.wait()
@@ -84,11 +90,11 @@ export default function SellNFT () {
             alert( "Upload error"+e )
         }
     }
+    console.log('price: ' + typeof(formParams.price))
 
     console.log("Working", process.env);
     return (
         <div className="">
-        <Navbar></Navbar>
         <div className="flex flex-col place-items-center mt-10" id="nftForm">
             <form className="bg-white shadow-md rounded px-8 pt-4 pb-8 mb-4">
             <h3 className="text-center font-bold text-purple-500 mb-8">Upload your NFT to the marketplace</h3>
