@@ -15,7 +15,7 @@ import {
 import { collection, addDoc, getDocs, serverTimestamp, updateDoc, doc, arrayUnion, query, where, onSnapshot, snapshotEqual} from 'firebase/firestore';
 import { useEffect } from "react";
 import CreateNFTCard from "./CreateNFTCard";
-import ActualCard from "./ActualCreationCard";
+import CreationCard from "./CreationCard";
 import '../style1.css'
 
 
@@ -137,7 +137,7 @@ async function listNFT(e) {
         <ul>
         {(data) ? data.map((value) => (
           <div>
-            <ActualCard collectionData = {value}/>
+            <CreationCard collectionData = {value}/>
             <button onClick={listNFT}
             style={{
                 border:'3px solid white', 

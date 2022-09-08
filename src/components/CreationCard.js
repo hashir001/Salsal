@@ -2,7 +2,7 @@ import { collection } from 'firebase/firestore'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const ActualCard = ({collectionData}) => {
+const CreationCard = ({collectionData}) => {
     //bg-pink-900
     const newTo = {
         pathname:"/reqverify/"+collectionData.id
@@ -29,4 +29,4 @@ const ActualCard = ({collectionData}) => {
   )
 }
 
-export default ActualCard
+export default CreationCard

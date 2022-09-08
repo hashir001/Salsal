@@ -23,9 +23,6 @@ import VerifiedCollections from './components/VerifiedCollections';
 import Home from './components/Home';
 import CollectorRoute from './components/CollectorRoute';
 import ExpertRoute from './components/ExpertRoute';
-import Mission from './components/Mission';
-import Contact from './components/Contact';
-import About from './components/About';
 
 export default function App() {
 const [ data, setData ] = useState({accountType:'', connectedToMetaMask: false, address:'0x'});
@@ -37,10 +34,7 @@ return (
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />}/>
-        <Route path="/marketplace" element={<Marketplace />}/>   
-        <Route path="/mission" element={<Mission />}/> 
-        <Route path="/contact" element={<Contact />}/>
-        <Route path="/about" element={<About />}/>        
+        <Route path="/marketplace" element={<Marketplace />}/>        
      
         <Route element={<ExpertRoute />}>
         <Route path="/verify" element={<Verify />} />
