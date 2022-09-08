@@ -202,7 +202,7 @@ async function connectWebsite() {
             <li><Link to = '/marketplace'>Marketplace</Link></li>
 
             
-            {/* //{((data.accountType == 'collector'| data.accountType == 'admin') && data.address != '0x') ? */}
+            {((data.accountType == 'collector'| data.accountType == 'admin') && data.address != '0x') ?
             <div className='dropdown'>
             <li className='dropbtn'>Collector</li>
             <div className='dropdown-content'>
@@ -212,8 +212,7 @@ async function connectWebsite() {
             <br /><br />
             <li><Link style={{display:"block", width:50}} to = '/profile'>Profile</Link></li>
             </div>
-            </div>
-            {/* </div> : null} */}
+            </div> : null} 
 
             {((data.accountType == 'expert'| data.accountType == 'admin') && data.address != '0x') ?
             <div className='dropdown'>

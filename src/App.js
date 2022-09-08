@@ -40,13 +40,13 @@ return (
         <Route path="/reqverify/:id" element={<ReqVerify />}/>  
         </Route>
 
-        {/* <Route element={<CollectorRoute />}> */}
+        <Route element={<CollectorRoute />}>
         <Route path="/upload" element={<UploadNFT />} /> 
         <Route path="/verified" element={<VerifiedCollections />} /> 
         <Route path="/createnft/:id" element={<CreateNFT />}/>
         <Route path="/profile" element={<Profile />}/> 
         <Route path="/nftPage/:tokenId" element={<NFTPage />}/> 
-        {/* </Route>  */}
+        </Route> 
 
       </Routes>
     </BrowserRouter>
