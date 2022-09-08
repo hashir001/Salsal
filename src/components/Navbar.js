@@ -174,7 +174,17 @@ async function connectWebsite() {
   };
 
   useEffect(() => {
-    let val = window.ethereum.isConnected();
+    let val;
+    
+    if(window.ethereum.isConnected() === undefined){
+      val = false;
+    }
+    else if(window.ethereum.isConnected() === true){
+      val = true
+    }
+    else if(window.ethereum.isConnected() === false){
+      val = false;
+    }
 
     if(val)
     {
