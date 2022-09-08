@@ -1,4 +1,3 @@
-import logo from '../muskLogo.png';
 import {
   BrowserRouter as Router,
   Switch,
