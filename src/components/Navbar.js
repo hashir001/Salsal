@@ -174,29 +174,28 @@ async function connectWebsite() {
   };
 
   useEffect(() => {
-    let val;
-    
-    if(window.ethereum.isConnected() === undefined){
-      val = false;
-    }
-    else if(window.ethereum.isConnected() === true){
-      val = true
-    }
-    else if(window.ethereum.isConnected() === false){
-      val = false;
-    }
+    let val = false;
 
+    if (typeof window.ethereum !== 'undefined') {
+      val = window.ethereum.isConnected();
+    }
+     
     if(val)
     {
+      console.log(val)
+      console.log('Metamask is installed!')
       getAddress();
       toggleConnect(val);
       updateButton();
     }
 
+    if (typeof window.ethereum !== 'undefined') {
     window.ethereum.on('accountsChanged', handleAccountChange);
     return () => {
       window.ethereum?.removeListener("accountsChanged", handleAccountChange);
     };
+    }
+    
  });
 
 
