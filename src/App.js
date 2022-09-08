@@ -15,7 +15,6 @@ import ExpertDashboard from './components/ExpertDashboard';
 import Verify from './components/Verify';
 import ReqVerify from './components/ReqVerify';
 import UploadNFT from './components/UploadNFT';
-import SignIn from './components/SignIn';
 import { LoginContext } from './components/LoginContext';
 import { useState } from 'react';
 import CreateNFT from './components/CreateNFT';
@@ -41,13 +40,13 @@ return (
         <Route path="/reqverify/:id" element={<ReqVerify />}/>  
         </Route>
 
-        <Route element={<CollectorRoute />}>
+        {/* <Route element={<CollectorRoute />}> */}
         <Route path="/upload" element={<UploadNFT />} /> 
         <Route path="/verified" element={<VerifiedCollections />} /> 
         <Route path="/createnft/:id" element={<CreateNFT />}/>
         <Route path="/profile" element={<Profile />}/> 
         <Route path="/nftPage/:tokenId" element={<NFTPage />}/> 
-        </Route> 
+        {/* </Route>  */}
 
       </Routes>
     </BrowserRouter>

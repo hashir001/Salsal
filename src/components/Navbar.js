@@ -17,6 +17,7 @@ import { useEffect, useState, useContext } from 'react';
 import { useLocation } from 'react-router';
 import { AppContext } from '../App';
 import { LoginContext } from './LoginContext'
+import { StorageContext } from './StorageContext'
 import '../style1.css'
 
 
@@ -61,14 +62,16 @@ const setAccountType = async(user) => {
   const docRef = doc(db,'Accounts',user.uid);
 
   onSnapshot(docRef, (doc) => {
+
     setData({...data, accountType:doc.data().type})
+    console.log(doc.data().type)
+    localStorage.setItem('accountType', JSON.stringify(doc.data().type));
+    localStorage.setItem('address', JSON.stringify(currAddress))
   })
 }
 
 useEffect(()=>{
-  
   setAccountType(user);
-  //localStorage.setItem('user', JSON.stringify(user));
 },[user])
 
 
@@ -77,6 +80,7 @@ useEffect(()=>{
 onAuthStateChanged(auth, (currentUser) => {
   if(currentUser){
   setUser(currentUser); 
+  console.log(currentUser)
   
 }     
 // const ourUser = JSON.parse(localStorage.getItem('user'));
@@ -96,7 +100,7 @@ const login = async(e) => {
         loginEmail,
         loginPassword
       );
-     //setIsLoggedIn(true);
+     console.log(user)
     } catch (error) {
       console.log(error.message);
     }
@@ -197,16 +201,8 @@ async function connectWebsite() {
             <li><Link to = '/'>Home</Link></li>
             <li><Link to = '/marketplace'>Marketplace</Link></li>
 
-            <div className='dropdown'>
-            <li className='dropbtn'><Link to ='/about'>About Us</Link></li>
-            <div className='dropdown-content'>
-            <li><Link style={{display:"block",paddingTop:3}} to = '/mission'>Mission</Link></li>
-            <br /><br />
-            <li><Link style={{display:"block"}} to = '/contact'>Contact Us</Link></li>
-            </div>
-            </div>
-
-            {((data.accountType == 'collector'| data.accountType == 'admin') && data.address != '0x') ?
+            
+            {/* //{((data.accountType == 'collector'| data.accountType == 'admin') && data.address != '0x') ? */}
             <div className='dropdown'>
             <li className='dropbtn'>Collector</li>
             <div className='dropdown-content'>
@@ -216,7 +212,8 @@ async function connectWebsite() {
             <br /><br />
             <li><Link style={{display:"block", width:50}} to = '/profile'>Profile</Link></li>
             </div>
-            </div> : null}
+            </div>
+            {/* </div> : null} */}
 
             {((data.accountType == 'expert'| data.accountType == 'admin') && data.address != '0x') ?
             <div className='dropdown'>

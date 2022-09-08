@@ -38,6 +38,8 @@ function UploadNFT() {
 
   const [ docId, setDocID ] = useState('');
 
+  const [ provDoc, setProvDoc ] = useState('');
+
   const { data, setData } = useContext(LoginContext);
 
   // pinata
@@ -60,6 +62,45 @@ function UploadNFT() {
         console.log("Error during file upload", e);
     }
 }
+
+async function OnChangeDetails(e) {
+  var file = e.target.files[0];
+  console.log(file)
+  //check for file extension
+  try {
+      //upload the file to IPFS
+      const response = await uploadFileToIPFS(file);
+      if(response.success === true) {
+          console.log("Uploaded Details File to IPFS: ", response.pinataURL)
+          setDetDoc(response.pinataURL);
+      }
+  }
+  catch(e) {
+      console.log("Error during file upload", e);
+  }
+}
+
+async function OnChangeProvenance(e) {
+  var file = e.target.files[0];
+  console.log(file)
+  //check for file extension
+  try {
+      //upload the file to IPFS
+      const response = await uploadFileToIPFS(file);
+      if(response.success === true) {
+          console.log("Uploaded Provenance File to IPFS: ", response.pinataURL)
+          setProvDoc(response.pinataURL);
+      }
+  }
+  catch(e) {
+      console.log("Error during file upload", e);
+  }
+}
+
+
+
+
+
 
 async function uploadMetadataToIPFS() {
   if( !name || !description || !price || !fileURL)
@@ -115,19 +156,21 @@ async function uploadToBlockchain(e) {
 
       const dateInSecs = Math.floor(new Date().getTime() / 1000);
 
-      let listedToken = await contract.createCollection(fileURL, collectionId, dateInSecs, detDoc);
+      let listedToken = await contract.createCollection(fileURL, collectionId, dateInSecs, detDoc, provDoc);
 
       
 
       alert("Successfully created collection!");
       updateVerified();
-      contract.on("CollectionCreated", (_tokenId, _identifier, _uri, _verified, _status, event ) => {
+      contract.on("CollectionCreated", (_tokenId, _identifier, _uri, _verified, _status, _additional, _prov, event ) => {
         let info = {
             tokenId: _tokenId.toNumber(),
             tokenIdentifier: _identifier,
             verificationFileURI: _uri,
             verified: _verified,
             verificationStatus: _status,
+            additionalDetailsFileIPFS: _additional,
+            provenanceFileIPFS: _prov,
             transactionData: event
         }
         console.log(JSON.stringify(info, null, 4))
@@ -178,7 +221,9 @@ const uploadPost = async(e) => {
     uploadBytes(imageRef, nftImg).then(async()=>{
       const downloadURL = await getDownloadURL(imageRef)
       await updateDoc(doc(db,"Collection",docRef.id),{
-        NFTImageURL: downloadURL
+        NFTImageURL: downloadURL,
+        CollectionDetailsIPFS: detDoc,
+        ProvenanceHistoryIPFS:provDoc
       })
     })
 
@@ -203,6 +248,7 @@ console.log(docId)
         <div style={{position:'relative'}}className='wrapper'>
           <h1 style = {{fontSize:44,marginTop:30,color:'white',position:'absolute',left:'32%',top:40}}>Upload Your Collection</h1>
           <div style={{position:'absolute',left:'25%',top:'8rem',padding:40,border:'2px solid white',marginTop:20}}>
+
         <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}}for="name">Name</label>
             <input 
             style = {{border:'2px solid white',color:'white', borderRadius:999, padding:12,marginBottom: 35}}
@@ -232,7 +278,19 @@ console.log(docId)
             type = "file"
             onChange = {(e) => {
               setDetDoc(e.target.files[0]);
-              OnChangeFile(e);
+              OnChangeDetails(e);
+            }}
+            ></input>
+            <br />
+
+            <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Provenance History</label>
+            <input 
+            style = {{marginBottom: 35, color:'white'}}
+            name = "nft-img"
+            type = "file"
+            onChange = {(e) => {
+              setProvDoc(e.target.files[0]);
+              OnChangeProvenance(e);
             }}
             ></input>
             <br />
@@ -266,6 +324,7 @@ console.log(docId)
         </div>
         
         <button onClick={uploadPost} 
+        disabled = {!(name && price && description && fileURL && detDoc && provDoc)}
         style={{
         marginTop:30,
         border:"3px solid",

@@ -30,6 +30,7 @@ contract NFTMarketplace is ERC721URIStorage {
         string identifier;
         string ipfsURI;
         string additionalDetails;
+        string provenanceDetails;
         VerificationInfo currentVerificationStatus;
         uint256 timeOfCreation;
     }
@@ -75,7 +76,8 @@ contract NFTMarketplace is ERC721URIStorage {
         string uri,
         string verified,
         string status,
-        string additionalDetails
+        string additionalDetails,
+        string provenanceDoc
     );
 //TokenCreated(tokenId, price, _time, _status, _details, _expertAddress, _ipfsUri);
      event TokenCreated (
@@ -87,7 +89,8 @@ contract NFTMarketplace is ERC721URIStorage {
         string details,
         address expertAddress,
         string uri,
-        string _additionalDetails
+        string _additionalDetails,
+        string _provDetails
     );
 
     // get the token
@@ -130,6 +133,8 @@ contract NFTMarketplace is ERC721URIStorage {
 
     mapping(string => uint256) private additionalDetailsToTokenId;
 
+    mapping(uint256 => string) private tokenIDToProvenanceDetails;
+
 
     constructor() ERC721("MUSK", "MSK") {
         owner = payable(msg.sender);
@@ -163,7 +168,7 @@ contract NFTMarketplace is ERC721URIStorage {
     }
 
 
-    function createCollection(string memory _ipfsURI, string memory _identifier, uint256 _timeOfCreation, string memory _additionalDetails) public returns(string memory){
+    function createCollection(string memory _ipfsURI, string memory _identifier, uint256 _timeOfCreation, string memory _additionalDetails, string memory _provDetails) public returns(string memory){
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
 
@@ -172,6 +177,8 @@ contract NFTMarketplace is ERC721URIStorage {
 
         tokenIDToAdditionalDetails[newTokenId] = _additionalDetails;
         additionalDetailsToTokenId[_additionalDetails] = newTokenId ;
+
+        tokenIDToProvenanceDetails[newTokenId] = _provDetails;
 
         tokenIdToIpfsUri[newTokenId] = _ipfsURI;
 
@@ -185,6 +192,7 @@ contract NFTMarketplace is ERC721URIStorage {
             identifier: _identifier, 
             ipfsURI: _ipfsURI,
             additionalDetails: _additionalDetails,
+            provenanceDetails: _provDetails,
             currentVerificationStatus: VerificationInfo({
                 verified: 'No', 
                 status:'pending',
@@ -205,7 +213,7 @@ contract NFTMarketplace is ERC721URIStorage {
                 details: ''
                 }));
 
-        emit CollectionCreated(newTokenId, _identifier, _ipfsURI, 'No','pending',_additionalDetails);
+        emit CollectionCreated(newTokenId, _identifier, _ipfsURI, 'No','pending',_additionalDetails,_provDetails);
 
         return _identifier;
         
@@ -233,6 +241,8 @@ contract NFTMarketplace is ERC721URIStorage {
     function createListedToken(uint256 tokenId, uint256 price, uint256 _time, string memory _status) private {
         string memory _identifier = tokenIDToIdentifier[tokenId];
         string memory _additionalDetails = tokenIDToAdditionalDetails[tokenId];
+
+        string memory _provDetails = tokenIDToProvenanceDetails[tokenId];
         //Make sure the sender sent enough ETH to pay for listing
        // require(msg.value == listPrice, "Hopefully sending the correct price");
         require(price > 0, "Make sure the price isn't negative");
@@ -253,6 +263,7 @@ contract NFTMarketplace is ERC721URIStorage {
             timeOfCreation: _time,
             ipfsURI: _ipfsUri,
             additionalDetails: _additionalDetails,
+            provenanceDetails: _provDetails,
             currentVerificationStatus: VerificationInfo({
                 verified: 'Yes', 
                 status: _status,
@@ -280,7 +291,7 @@ contract NFTMarketplace is ERC721URIStorage {
 
         _transfer(msg.sender, address(this), tokenId);
 
-       emit TokenCreated(tokenId, _identifier,price, _time, _status, _details, _expertAddress, _ipfsUri,_additionalDetails);
+       emit TokenCreated(tokenId, _identifier,price, _time, _status, _details, _expertAddress, _ipfsUri,_additionalDetails, _provDetails);
     }
     
     //This will return all the NFTs currently listed to be sold on the marketplace

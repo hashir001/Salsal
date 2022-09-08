@@ -17,7 +17,7 @@ module.exports = {
       chainId: 1337
     },
     goerli: {
-      url: process.env.REACT_APP_ALCHEMY_API_URL,
+      url: "https://eth-goerli.g.alchemy.com/v2/ZGzDvvZOpx2RDdlKwQg88atEtaPJ5L0J",
       accounts: process.env.REACT_APP_ALCHEMY_API_ACCOUNTS
     }
   },
