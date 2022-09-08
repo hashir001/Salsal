@@ -3,6 +3,7 @@
 Live Site: https://agur-ab416.web.app/
 
 You must install MetaMask to view the site.
+##### **Credit: The project was bootstrapped with the following repository https://github.com/OMGWINNING/NFT-Marketplace-Tutorial for the NFT Marketplace functionality.**
 
 ## Setting Up
 
@@ -42,4 +43,5 @@ npm start
 1. To verify a Collection, navigate to the Expert dropdown and select Verify.
 2. You will see a list of Collections requiring verification. Choose one.
 3. You see then see more data on the Collection. At the bottom of the page, you can submit your Verification Details.
+
 
