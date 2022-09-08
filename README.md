@@ -17,9 +17,10 @@ https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpg
 4. Now return to the network selection area and choose the Goerli Test Network
 
 #### 3. Get Test ETH
-You will need test ETH to interact with the Blockchain. Specifically, Goerli ETH.
-You can use this Goerli faucet to get test ETH: https://goerlifaucet.com/
-You will be prompted to create an account with Alchemy. Do so, after which you can paste your wallet address from MetaMask and receive the ETH.
+You will need test ETH to interact with the Blockchain. Specifically, Goerli ETH.  
+You can use this Goerli faucet to get test ETH: https://goerlifaucet.com/  
+You will be prompted to create an account with Alchemy.     
+After doing so, paste your wallet address from MetaMask and you will receive the ETH.
 
 #### 4. Ready
 You are ready to perform transactions on the Blockchain.
