@@ -34,7 +34,8 @@ return (
       <Routes>
         <Route path="/" element={<Home />}/>
         <Route path="/marketplace" element={<Marketplace />}/>        
-     
+         
+        
         <Route element={<ExpertRoute />}>
         <Route path="/verify" element={<Verify />} />
         <Route path="/reqverify/:id" element={<ReqVerify />}/>  
@@ -45,7 +46,7 @@ return (
         <Route path="/verified" element={<VerifiedCollections />} /> 
         <Route path="/createnft/:id" element={<CreateNFT />}/>
         <Route path="/profile" element={<Profile />}/> 
-        <Route path="/nftPage/:tokenId" element={<NFTPage />}/> 
+        <Route path="/nftPage/:tokenId" element={<NFTPage />}/>
         </Route> 
 
       </Routes>

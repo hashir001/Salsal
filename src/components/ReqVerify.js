@@ -128,7 +128,7 @@ async function uploadToBlockchain(e) {
         
         setStatus('');
         setFileURL('');
-        window.location.replace('/')
+       // window.location.replace('/')
     }
     catch(e) {
         alert( "Upload error" + e )
