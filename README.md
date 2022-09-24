@@ -2,6 +2,9 @@
 
 Live Site: https://agur-ab416.web.app/
 
+Test Account Email: agurtest@gmail.com
+Test Account Password: Agur123
+
 You must install MetaMask to view the site.
 ##### **Credit: The project was bootstrapped with the following repository https://github.com/OMGWINNING/NFT-Marketplace-Tutorial for the NFT Marketplace functionality.**
 
