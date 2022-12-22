@@ -2,32 +2,31 @@ import { collection } from 'firebase/firestore'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const VerifyCard = ({collectionData}) => {
+const VerifyCard = ({collectionData,link}) => {
     const newTo = {
-        pathname:"/reqverify/"+collectionData.id
+      pathname:link+collectionData.id
     }
-
+console.log(link)
   return (
 <div class="flex justify-around mt-20 mb-20">
-  <div class="rounded-lg shadow-lg bg-white max-w-xs">
+  <div class="rounded-lg shadow-lg bg-black max-w-xs">
   <Link to = {newTo}>
       <img class="rounded-t-lg" src={collectionData.NFTImageURL} alt=""/>
-      </Link>
+  </Link>
     <div class="p-6">
-      <h5 class="text-white text-2xl font-medium mb-2">{collectionData.Name}</h5>
-      <p class="text-white text-base mb-4">
+      <h5 class="text-black text-2xl font-medium mb-2">{collectionData.Name}</h5>
+      <p class="text-black text-base mb-4">
       {collectionData.Description}
       </p>
 
       <Link to={newTo} class="inline-flex items-center 
-      py-2 px-3 text-lg font-medium text-center text-white bg-rose-900 rounded-lg  focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-             Verify
+      py-2 px-3 text-lg font-medium text-center text-black bg-rose-900 rounded-lg  focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+             View Collection
       </Link>
      
     </div>
   </div>
-//</div>
-
+</div>
 
 
 

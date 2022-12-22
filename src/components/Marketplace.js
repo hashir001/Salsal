@@ -56,7 +56,7 @@ if(!dataFetched)
     getAllNFTs();
 
 return (
-    <div className="wrapper md:text-xl font-medium text-white">
+    <div className="wrapper md:text-xl font-medium text-black">
        <p style={{fontSize:36,textAlign:'center',position:'relative',top:80}}>Verified NFT Collections</p> 
         <div className=" flex flex-col place-items-center mt-20">
            

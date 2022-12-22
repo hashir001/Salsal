@@ -13,10 +13,10 @@ const VerifyCard = ({collectionData}) => {
         <img class="rounded-t-lg" src={collectionData.NFTImageURL} alt="" />
     </Link>
     <div class="p-5">
-        <h5 class="mb-2 text-2xl font-bold tracking-tight text-white dark:text-white">
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-black dark:text-white">
         {collectionData.Name}</h5>
         
-        <p class="mb-3 font-normal text-white dark:text-gray-400">
+        <p class="mb-3 font-normal text-black dark:text-gray-400">
         {collectionData.Description}
         </p>
         

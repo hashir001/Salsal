@@ -82,7 +82,7 @@ async function buyNFT(tokenId) {
         <div style={{"min-height":"100vh"}}>
             <div className="flex ml-20 mt-20">
                 <img src={tokenData.image} alt="" className="w-2/5" />
-                <div className="text-xl ml-20 space-y-8 text-white shadow-2xl rounded-lg border-2 p-5">
+                <div className="text-xl ml-20 space-y-8 text-black shadow-2xl rounded-lg border-2 p-5">
                     <div>
                         Token ID: {tokenData.tokenId}
                     </div>
@@ -117,7 +117,7 @@ async function buyNFT(tokenId) {
 
                     <div>
                     { currAddress == tokenData.owner || currAddress == tokenData.seller ?
-                        <button disable = {!(data.accountType === 'collector' && !(data.address === '0x'))} className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => buyNFT(tokenId)}>Buy this NFT</button>
+                        <button disable = {!(data.accountType === 'collector' && !(data.address === '0x'))} className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded text-sm" onClick={() => buyNFT(tokenId)}>Buy this NFT</button>
                         : <div className="text-emerald-700">You are the owner of this NFT</div>
                     }
                     

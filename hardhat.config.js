@@ -17,8 +17,11 @@ module.exports = {
       chainId: 1337
     },
     goerli: {
-      url:process.env.REACT_APP_ALCHEMY_API_URL ,
-      accounts: process.env.REACT_APP_ALCHEMY_API_ACCOUNTS
+      
+      url:"https://eth-goerli.g.alchemy.com/v2/ZGzDvvZOpx2RDdlKwQg88atEtaPJ5L0J",
+      //process.env.REACT_APP_ALCHEMY_API_URL ,
+      accounts: ['ee634744107e45469ffb2c08fd35ab9b2b8ca2c56155efa380c84eb70ef2539e','458aaca4c957f3ae88538069350e1422006ee3d81121da9d1492b1a48ff98410']
+      //process.env.REACT_APP_ALCHEMY_API_ACCOUNTS
       
     }
   },

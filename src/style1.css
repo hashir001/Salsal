@@ -2,7 +2,8 @@
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    background-color:rgb(34, 33, 33) ;
+    background-color: #fff;
+    /* background-color:rgb(34, 33, 33) ; */
     
 }
 
@@ -16,7 +17,8 @@ html, body {
 .wrapper{
     height: 100vh;
     width: 100vw;
-    background-image:linear-gradient(rgb(34, 33, 33),rgb(34, 33, 33));
+    background-color: #fff;
+    /* background-image:linear-gradient(rgb(34, 33, 33),rgb(34, 33, 33)); */
     
 }
 
@@ -25,7 +27,8 @@ html, body {
 .banner{
     width: 100%;
     height:100%;
-    background-image:linear-gradient(rgb(34, 33, 33),rgb(34, 33, 33));
+    background-color: #fff;
+    /* background-image:linear-gradient(rgb(34, 33, 33),rgb(34, 33, 33)); */
     background-size: cover;
     background-position:center
 }
@@ -52,7 +55,7 @@ html, body {
   }
 
   .dropbtn {
-    color: white;
+    color: black;
     padding: 16px;
     border: none;
   }
@@ -75,7 +78,7 @@ html, body {
 
 .navbar ul li a{
 text-decoration: none;
-color: #fff;
+color: #000;
 
 text-transform: uppercase;
 }
@@ -292,7 +295,7 @@ text-transform: uppercase;
     content: "";
     height: 3px;
     width: 0;
-    background: #fff;
+    background: #000;
     position: absolute;
     left: 0;
     bottom: 2px;
@@ -310,22 +313,11 @@ text-transform: uppercase;
     top: 50%;
     transform: translateY(-50%);
     text-align: center;
-    color:#fff;
+    color:#212024;
 
 }
 
-.content h1{
-    font-size: 90px;
-    margin-top: 80px;
-}
 
-
-.content p{
-    margin: 20px auto;
-    font-weight: 100;
-    line-height: 25px;
-
-}
 button{
   width: 200px;
   padding: 15px 0;
@@ -342,4 +334,18 @@ button{
 
 }
 
+
+.spacer {
+  aspect-ratio: 900/600;
+  width: 100%;
+  height:200vh;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  position:absolute
+
+}
+
+.layer1 {
+  background-image: url('./layered-waves\ 2.svg');} 
 

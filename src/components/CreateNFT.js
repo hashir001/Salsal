@@ -21,33 +21,26 @@ import '../style1.css'
 
 export default function CreateNFT() {
     const [ data, setData ] = useState();
-
     const [ names, setNames ] = useState('');
     const [ descriptions, setDescriptions ] = useState('');
     const [ prices, setPrices ] = useState('');
-
     const [ identifiers, setIdentifiers ] = useState('');
     const [ ipfsImageURL, setIpfsImageURL ] = useState('');
-
     const ethers = require("ethers");
     const collectionRef = collection(db, "Collection");
 
     let { id } = useParams();
-
     const q = query(collectionRef, where("DocumentID","==",id))
     
 
 useEffect(()=>{
     onSnapshot(q, (snapshot) =>{
-
     setData(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))
     setNames(snapshot.docs.map(doc => doc.data().Name))   
     setDescriptions(snapshot.docs.map(doc => doc.data().Description))
     setPrices(snapshot.docs.map(doc => doc.data().Price))
     setIdentifiers(snapshot.docs.map(doc => doc.data().Identifier)) 
     setIpfsImageURL(snapshot.docs.map(doc => doc.data().NFTImageIPFS))
-
-
 })},[])
 
 const name = names[0]
@@ -95,14 +88,13 @@ async function listNFT(e) {
         
         //massage the params to be sent to the create NFT request
         const price2 = ethers.utils.parseUnits('0.03', 'ether')
-        console.log('price2: '+ price2)
+        // console.log('price2: '+ price2)
         let listingPrice = await contract.getListPrice()
         listingPrice = listingPrice.toString()
 
-        console.log('lsting price: ' + listingPrice)
-
-        console.log('url ' + metadataURL);
-        console.log('identifier ' + identifier)
+        // console.log('lsting price: ' + listingPrice)
+        // console.log('url ' + metadataURL);
+        // console.log('identifier ' + identifier)
         const dateInSecs = Math.floor(new Date().getTime() / 1000);
 
 
@@ -140,7 +132,7 @@ async function listNFT(e) {
             <CreationCard collectionData = {value}/>
             <button onClick={listNFT}
             style={{
-                border:'3px solid white', 
+                border:'3px solid black', 
                 marginTop:75, 
                 padding:20,
                 position:'relative',

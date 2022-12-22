@@ -5,7 +5,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-//import "solidity-string-utils/StringUtils.sol";
+import "solidity-string-utils/StringUtils.sol";
+
 
 contract NFTMarketplace is ERC721URIStorage {
 
@@ -19,6 +20,7 @@ contract NFTMarketplace is ERC721URIStorage {
     //The fee charged by the marketplace to be allowed to list an NFT
     uint256 listPrice = 0.01 ether;
 
+   
 
     //The structure to store info about a listed token
     struct ListedToken {
@@ -35,11 +37,22 @@ contract NFTMarketplace is ERC721URIStorage {
         uint256 timeOfCreation;
     }
 
-    struct VerificationInfo {
+
+     struct VerificationInfo {
         string verified;
         string status;
         address expertAddress;
         string fileURI;
+        uint256 time;
+        string details;
+    }
+
+    
+    struct Vote{
+        string vote;
+        string verificationFileURI;
+        string status;
+        address expertAddress;
         uint256 time;
         string details;
     }
@@ -59,6 +72,7 @@ contract NFTMarketplace is ERC721URIStorage {
         bool readyForListing    
     );
 
+    //the event emitted when a token is verified
     event TokenVerified (
         uint256 indexed tokenId,
         string identifier,
@@ -70,6 +84,7 @@ contract NFTMarketplace is ERC721URIStorage {
         string verified  
     );
 
+    //the event emitted when a collection is created
      event CollectionCreated (
         uint256 indexed tokenId,
         string identifier,
@@ -79,7 +94,8 @@ contract NFTMarketplace is ERC721URIStorage {
         string additionalDetails,
         string provenanceDoc
     );
-//TokenCreated(tokenId, price, _time, _status, _details, _expertAddress, _ipfsUri);
+    
+    //TokenCreated(tokenId, price, _time, _status, _details, _expertAddress, _ipfsUri);
      event TokenCreated (
         uint256 indexed tokenId,
         string identifier,
@@ -93,79 +109,79 @@ contract NFTMarketplace is ERC721URIStorage {
         string _provDetails
     );
 
-    // get the token
+    event Voted (
+        uint256 tokenId,
+        string vote,
+        string verificationFileURI,
+        string status,
+        address expertAddress,
+        uint256 time,
+        string details,
+        string identifier
+    );
+
     mapping(uint256 => ListedToken) private idToListedToken;
-
-    // get all the experts who verified a token
     mapping(uint256 => address[]) private idToVerifiedBy;
-
-    // get all tokens verified by a specific expert
     mapping(address => uint256[]) private addressToTokensVerified;
-
-    // get the verification timeline of a specific token
     mapping(uint256 => VerificationInfo[]) private tokenIDToVerificationHistory;
-
-    // get the tokenId from the identifier
     mapping(string => uint256) private identifierToTokenID;
-
-    // get the identifier from the tokenId
     mapping(uint256 => string) private tokenIDToIdentifier;
-
-    // get the owner history of a token
     mapping(uint256 => OwnerChange[]) private owners;
-
-    // get the ipfsuri of a token
     mapping(uint256 => string) private tokenIdToIpfsUri;
-
-    // get who intially verified the token
     mapping(uint256 => address) private idToInitialVerifier;
-
-    // get time of verification
     mapping(uint256 => uint256) private idToTimeVerified;
-
-    // get verification details
-    mapping(uint256 => string) private idToVerificationDetails;
-
-    // get status 
+    mapping(uint256 => string) private idToVerificationDetails; 
     mapping(uint256 => string) private idToStatus;
-
     mapping(uint256 => string) private tokenIDToAdditionalDetails;
-
     mapping(string => uint256) private additionalDetailsToTokenId;
-
     mapping(uint256 => string) private tokenIDToProvenanceDetails;
+    mapping(uint256 => mapping(address => Vote)) private collectionVotes;
+    mapping(uint256 => address[]) private collectionVoters;
 
+    //mapping(uint256 => OwnerChange[]) private owners;
+    function getProvenance(string memory _identifier) public view returns(OwnerChange[] memory){
+        uint256 tokenId = identifierToTokenID[_identifier];
+        return owners[tokenId];
+    } 
+    
+    function addVote(string memory _identifier, string memory _vote, string memory _uri, string memory _status, string memory _details,uint256 _time) public {
+        uint256 _tokenId = identifierToTokenID[_identifier];
+        address _expertAddress = msg.sender;
+        collectionVotes[_tokenId][_expertAddress] = Vote({
+            vote: _vote,
+            verificationFileURI: _uri,
+            expertAddress: msg.sender,
+            status: _status,
+            time:_time,
+            details:_details
+        });
+        collectionVoters[_tokenId].push(_expertAddress);
 
+        emit Voted(_tokenId,_vote,_uri,_status,_expertAddress,_time,_details,_identifier);
+    }
+
+    
+    function getVote(uint _tokenId, address _expertAddress) public view returns(Vote memory){
+        return collectionVotes[_tokenId][_expertAddress];
+    }
+    
     constructor() ERC721("MUSK", "MSK") {
         owner = payable(msg.sender);
     }
 
-    function updateListPrice(uint256 _listPrice) public payable {
-        require(owner == msg.sender, "Only owner can update listing price");
-        listPrice = _listPrice;
-    }
 
     function getListPrice() public view returns (uint256) {
         return listPrice;
     }
 
-    function getLatestIdToListedToken() public view returns (ListedToken memory) {
-        uint256 currentTokenId = _tokenIds.current();
-        return idToListedToken[currentTokenId];
-    }
-
-    function getListedTokenForId(uint256 tokenId) public view returns (ListedToken memory) {
-        return idToListedToken[tokenId];
-    }
-
-    function getListedTokenWithIdentifier(string memory _identifier) public view returns (ListedToken memory) {
-        uint256 tokenId = identifierToTokenID[_identifier];
-        return idToListedToken[tokenId];
-    }
-
-    function getCurrentToken() public view returns (uint256) {
-        return _tokenIds.current();
-    }
+    //  function updateListPrice(uint256 _listPrice) public payable returns(uint256) {
+    //     listPrice = _listPrice;
+    //     return listPrice;
+    // }
+    
+    // function getListedTokenForId(uint256 tokenId) public view returns (ListedToken memory) {
+    //     return idToListedToken[tokenId];
+    // }
 
 
     function createCollection(string memory _ipfsURI, string memory _identifier, uint256 _timeOfCreation, string memory _additionalDetails, string memory _provDetails) public returns(string memory){
@@ -181,7 +197,7 @@ contract NFTMarketplace is ERC721URIStorage {
         tokenIDToProvenanceDetails[newTokenId] = _provDetails;
 
         tokenIdToIpfsUri[newTokenId] = _ipfsURI;
-
+       
         //Create the mapping of tokenId's to Token details
         idToListedToken[newTokenId] = ListedToken({
             tokenId: newTokenId, 
@@ -193,7 +209,7 @@ contract NFTMarketplace is ERC721URIStorage {
             ipfsURI: _ipfsURI,
             additionalDetails: _additionalDetails,
             provenanceDetails: _provDetails,
-            currentVerificationStatus: VerificationInfo({
+             currentVerificationStatus: VerificationInfo({
                 verified: 'No', 
                 status:'pending',
                 expertAddress: payable(address(0)),
@@ -215,8 +231,7 @@ contract NFTMarketplace is ERC721URIStorage {
 
         emit CollectionCreated(newTokenId, _identifier, _ipfsURI, 'No','pending',_additionalDetails,_provDetails);
 
-        return _identifier;
-        
+        return _identifier;   
     }
 
     //The first time a token is created, it is listed here
@@ -263,7 +278,6 @@ contract NFTMarketplace is ERC721URIStorage {
             timeOfCreation: _time,
             ipfsURI: _ipfsUri,
             additionalDetails: _additionalDetails,
-            provenanceDetails: _provDetails,
             currentVerificationStatus: VerificationInfo({
                 verified: 'Yes', 
                 status: _status,
@@ -271,7 +285,8 @@ contract NFTMarketplace is ERC721URIStorage {
                 fileURI: _ipfsUri,
                 time: _timeVerified,
                 details: _details
-                })
+                }),
+            provenanceDetails: _provDetails
             });
 
         tokenIDToVerificationHistory[tokenId].push(VerificationInfo({
@@ -296,21 +311,30 @@ contract NFTMarketplace is ERC721URIStorage {
     
     //This will return all the NFTs currently listed to be sold on the marketplace
     function getAllNFTs() public view returns (ListedToken[] memory) {
-        uint nftCount = _tokenIds.current();
-        ListedToken[] memory tokens = new ListedToken[](nftCount);
+        uint totalItemCount = _tokenIds.current();
+        uint itemCount = 0;
         uint currentIndex = 0;
 
-        //at the moment currentlyListed is true for all, if it becomes false in the future we will 
-        //filter out currentlyListed == false over here
-        for(uint i=
-        0;i<nftCount;i++)
+         //Count the collection objects that are verified
+        for(uint i=0; i < totalItemCount; i++)
         {
-            uint currentId = i + 1;
-            ListedToken storage currentItem = idToListedToken[currentId];
-            tokens[currentIndex] = currentItem;
-            currentIndex += 1;
+            if(keccak256(abi.encodePacked(idToListedToken[i+1].currentVerificationStatus.verified)) == keccak256(abi.encodePacked("Yes"))){
+                itemCount += 1;
+            }
         }
-        //the array 'tokens' has the list of all NFTs in the marketplace
+
+        ListedToken[] memory tokens = new ListedToken[](itemCount);
+
+         for(uint i=0; i < totalItemCount; i++) {
+
+            if(keccak256(abi.encodePacked(idToListedToken[i+1].currentVerificationStatus.verified)) == keccak256(abi.encodePacked("Yes"))) {
+                uint currentId = i+1;
+                ListedToken storage currentItem = idToListedToken[currentId];
+                tokens[currentIndex] = currentItem;
+                currentIndex += 1;
+            }
+        }
+
         return tokens;
     }
     
@@ -330,7 +354,9 @@ contract NFTMarketplace is ERC721URIStorage {
 
         //Once you have the count of relevant NFTs, create an array then store all the NFTs in it
         ListedToken[] memory items = new ListedToken[](itemCount);
+
         for(uint i=0; i < totalItemCount; i++) {
+
             if(idToListedToken[i+1].owner == msg.sender || idToListedToken[i+1].seller == msg.sender) {
                 uint currentId = i+1;
                 ListedToken storage currentItem = idToListedToken[currentId];
@@ -369,21 +395,18 @@ contract NFTMarketplace is ERC721URIStorage {
             timeVal: _timeVal}));
     }
 
-    // modifier onlyExpert(){
-    //     require(addressToExpertAccount[msg.sender] == true);
-    //     _;
-    // }
-
 
     // we get the tokenId & theURI after the form is submitted in the response
     function verifyObject(string memory _details, string memory _verified, string memory _identifier, string memory theURI, string memory _status, uint256 _time) public returns (string memory) {
         //uint256 index = addressToTokensVerified[msg.sender].length;
         uint256 theTokenId = identifierToTokenID[_identifier];
 
+
         idToListedToken[theTokenId].currentVerificationStatus.verified = _verified;
         idToListedToken[theTokenId].currentVerificationStatus.status = _status;
         idToListedToken[theTokenId].currentVerificationStatus.expertAddress = msg.sender;
         idToListedToken[theTokenId].currentVerificationStatus.fileURI = theURI;
+        idToListedToken[theTokenId].currentVerificationStatus.details = _details;
 
 
         tokenIDToVerificationHistory[theTokenId].push(VerificationInfo({
@@ -410,30 +433,15 @@ contract NFTMarketplace is ERC721URIStorage {
         uint256 numberVerified = addressToTokensVerified[msg.sender].length;
         ListedToken[] memory verifiedObjects = new ListedToken[](numberVerified);
         uint totalItemCount = _tokenIds.current();
-        // uint itemCount = 0;
-        
-        // //Important to get a count of all the NFTs that belong to the user before we can make an array for them
-        // for(uint i=0; i < totalItemCount; i++)
-        // {
-        //     if(idToListedToken[i+1].owner == msg.sender || idToListedToken[i+1].seller == msg.sender){
-        //         itemCount += 1;
-        //     }
-        // }
 
-        //We store the verified objects in an array
         for (uint i = 0; i <totalItemCount; i++ ){
          verifiedObjects[i] = idToListedToken[addressToTokensVerified[msg.sender][i]];
         }
 
         return verifiedObjects;
-        
     }
-
-
+    
     function returnVerificationInfo(uint256 _tokenId) public view returns (VerificationInfo[] memory){
        return tokenIDToVerificationHistory[_tokenId];
     }
-
-
-
 }

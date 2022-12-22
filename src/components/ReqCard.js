@@ -10,7 +10,7 @@ const ReqCard = ({collectionData}) => {
 
   return (
     <div>
-<div class="flex justify-center mt-20 gap-4">
+<div class="flex justify-center mt-20 gap-2">
   <div class="rounded-lg shadow-lg bg-red max-w-xs">
       <img style={{width:'50rem',height:'21rem'}} class="rounded-t-lg" src={collectionData.NFTImageURL} alt=""/>
   </div>

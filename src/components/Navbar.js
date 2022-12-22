@@ -42,6 +42,7 @@ if(isLoggedIn && (data.accountType == 'admin' | data.accountType == 'collector' 
   setShowMetaMask(true);
 }
 console.log('address: ' + data.address);
+
 const getDocuments = async() => {
   getDocs(collectionRef)
   .then((snapshot) => {
@@ -51,19 +52,12 @@ const getDocuments = async() => {
   .catch(err => console.log(err)); 
 }
 
-// const setAccountType1 = async(user) => {
-//   const docRef = doc(db,'Accounts',user.uid);
-//   getDoc(docRef).then((doc) => {
-//       setData({...data, accountType:doc.data().type})
-//   })
-// }
 
 const setAccountType = async(user) => {
   const docRef = doc(db,'Accounts',user.uid);
 
   onSnapshot(docRef, (doc) => {
-
-    setData({...data, accountType:doc.data().type})
+    setData({...data, accountType:doc.data().type, email:user.email,uid:user.uid})
     console.log(doc.data().type)
     localStorage.setItem('accountType', JSON.stringify(doc.data().type));
     localStorage.setItem('address', JSON.stringify(currAddress))
@@ -76,18 +70,11 @@ useEffect(()=>{
 
 
 useEffect(()=>{
-  
 onAuthStateChanged(auth, (currentUser) => {
   if(currentUser){
   setUser(currentUser); 
   console.log(currentUser)
-  
 }     
-// const ourUser = JSON.parse(localStorage.getItem('user'));
-// console.log(ourUser)
-// if (user) {
-//  setUser(user);
-// }
 });  
 
 getDocuments();
@@ -198,6 +185,11 @@ async function connectWebsite() {
     
  });
 
+ 
+ const profileLink = {
+  pathname:"/profile/"+user.uid
+}
+
 
     return (
      <div className='banner'>
@@ -207,8 +199,9 @@ async function connectWebsite() {
         </Link> */}
 
         <ul>
-            <li><Link to = '/'>Home</Link></li>
+            <li style={{color:'black'}}><Link to = '/'>Home</Link></li>
             <li><Link to = '/marketplace'>Marketplace</Link></li>
+            <li><Link to = '/board'>Board</Link></li> 
 
             
             {((data.accountType == 'collector'| data.accountType == 'admin') && data.address != '0x') ?
@@ -219,7 +212,7 @@ async function connectWebsite() {
             <br /><br />
             <li><Link style={{display:"block", width:50}} to = '/verified'>Verified</Link></li>
             <br /><br />
-            <li><Link style={{display:"block", width:50}} to = '/profile'>Profile</Link></li>
+            <li><Link style={{display:"block", width:50}} to = {profileLink}>Profile</Link></li>
             </div>
             </div> : null} 
 
@@ -238,17 +231,19 @@ async function connectWebsite() {
             <li className='dropbtn'>Sign In</li>}
             <div className='dropdown-content'>
             
+
+            
            {!(data.accountType == 'admin' | data.accountType == 'collector' | data.accountType == 'expert')?
            <>
             <input
-            style = {{color:'white',display:"block",marginTop:6,marginLeft:20,border:'2px solid white',borderRadius:999,paddingLeft:13}}
+            style = {{color:'black',display:"block",marginTop:6,marginLeft:20,border:'2px solid black',borderRadius:999,paddingLeft:13}}
             type="text"
             placeholder="Email..."
             onChange={(e) => setLoginEmail(e.target.value)}/>
             <br /><br/>
 
             <input
-            style={{color:'white',position:'relative',bottom:30,marginLeft:20,border:'2px solid white', borderRadius:999,paddingLeft:13}}
+            style={{color:'black',position:'relative',bottom:30,marginLeft:20,border:'2px solid black', borderRadius:999,paddingLeft:13}}
             type="password"
             placeholder="Password..."
             onChange={(event) => {
@@ -259,11 +254,11 @@ async function connectWebsite() {
           <br /><br />
 
           {(data.accountType == 'admin' | data.accountType == 'collector' | data.accountType == 'expert') ?
-         <button style={{border:'1px solid white',padding:2,position:'relative',bottom:40,left:13}} 
+         <button style={{border:'1px solid black',padding:2,position:'relative',bottom:40,left:13}} 
           onClick={logout}> Sign Out </button> 
           :
           <button 
-            style={{border:'1px solid white',padding:2,position:'relative',bottom:40,left:13}}
+            style={{border:'1px solid black',padding:2,position:'relative',bottom:40,left:13}}
             onClick={async(e) =>{
             e.preventDefault();
             await login();
@@ -277,7 +272,7 @@ async function connectWebsite() {
             ?  */}
             
             <button style = {{padding:8}}
-            className="enableEthereumButton text-white" onClick={()=>connectWebsite()}>
+            className="enableEthereumButton text-black" onClick={()=>connectWebsite()}>
                   {connected? "MetaMask":"MetaMask"}
                 </button> 
               </li>

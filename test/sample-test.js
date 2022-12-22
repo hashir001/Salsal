@@ -1,19 +1,25 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+describe("Marketplace", function () {
+  it("Should return listing price", async function () {
+    const Contract = await ethers.getContractFactory("NFTMarketplace");
+    const contract = await Contract.deploy();
+    await contract.deployed();
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
-
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
-
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
-
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+    const contractListingPrice = ethers.utils.parseUnits('0.01', 'ether')
+    let getListingPrice = await contract.getListPrice()
+    expect(getListingPrice).to.equal(contractListingPrice);
   });
+
+  it("Should perform a Blockchain transaction", async function () {
+    const Contract = await ethers.getContractFactory("NFTMarketplace");
+    const contract = await Contract.deploy();
+    await contract.deployed();
+
+    let getCollectionIdentifier = await contract.createCollection('randomURI','testIdentifier',120,'details','provDetails')
+    console.log(getCollectionIdentifier)
+    expect(getCollectionIdentifier.blockHash !== undefined)
+  });
+
 });

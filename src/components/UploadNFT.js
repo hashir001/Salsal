@@ -25,19 +25,12 @@ function UploadNFT() {
   const [ name, setName ] = useState('');
   const [ description, setDescription ] = useState('');
   const [ price, setPrice ] = useState('');
-  
   const [ nftImg, setNftImg ] = useState(null);
-
   const [ detDoc, setDetDoc ] = useState(null);
-
   const [ selectedImages, setSelectedImages ] = useState([]);
-
   const [ collectionId, setCollectionId ] = useState('');
-
   const [ ready, setReady ] = useState(false);
-
   const [ docId, setDocID ] = useState('');
-
   const [ provDoc, setProvDoc ] = useState('');
 
   const { data, setData } = useContext(LoginContext);
@@ -98,10 +91,6 @@ async function OnChangeProvenance(e) {
 }
 
 
-
-
-
-
 async function uploadMetadataToIPFS() {
   if( !name || !description || !price || !fileURL)
       return;
@@ -126,6 +115,7 @@ async function uploadMetadataToIPFS() {
       console.log("error uploading JSON metadata:", e)
   }
 }
+
 let docRef;
  if(docId != ''){
     docRef = doc(db, "Collection", docId)
@@ -157,9 +147,6 @@ async function uploadToBlockchain(e) {
       const dateInSecs = Math.floor(new Date().getTime() / 1000);
 
       let listedToken = await contract.createCollection(fileURL, collectionId, dateInSecs, detDoc, provDoc);
-
-      
-
       alert("Successfully created collection!");
       updateVerified();
       contract.on("CollectionCreated", (_tokenId, _identifier, _uri, _verified, _status, _additional, _prov, event ) => {
@@ -198,6 +185,7 @@ const uploadPost = async(e) => {
     Description: description,
     Price: price,
     Collector_Address: data.address,
+    NumberOfVerifiers:0,
     Timestamp: serverTimestamp()
     })
 
@@ -231,7 +219,7 @@ const uploadPost = async(e) => {
     
 }
 
-console.log(docId)
+
 
     const onDrop = useCallback(acceptedFiles => {
         setSelectedImages(acceptedFiles.map(file => 
@@ -246,12 +234,12 @@ console.log(docId)
       
       return (
         <div style={{position:'relative'}}className='wrapper'>
-          <h1 style = {{fontSize:44,marginTop:30,color:'white',position:'absolute',left:'32%',top:40}}>Upload Your Collection</h1>
-          <div style={{position:'absolute',left:'25%',top:'8rem',padding:40,border:'2px solid white',marginTop:20}}>
+          <h1 style = {{fontSize:44,marginTop:30,color:'black',position:'absolute',left:'32%',top:40}}>Upload Your Collection</h1>
+          <div style={{position:'absolute',left:'25%',top:'8rem',padding:40,border:'2px solid black',marginTop:20}}>
 
-        <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}}for="name">Name</label>
+        <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}}for="name">Name</label>
             <input 
-            style = {{border:'2px solid white',color:'white', borderRadius:999, padding:12,marginBottom: 35}}
+            style = {{border:'2px solid black',color:'black', borderRadius:999, padding:12,marginBottom: 35}}
             name = "name"
             type = "text"
             value = {name}
@@ -260,9 +248,9 @@ console.log(docId)
 
             <br />
 
-            <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Description</label>
+            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Description</label>
             <textarea 
-            style = {{marginBottom: 35, color:'white',border:'2px solid white',backgroundColor:'rgb(34, 33, 33)'}}
+            style = {{marginBottom: 35, color:'black',border:'2px solid black',backgroundColor:'white'}}
             name = "nft-img"
             type = "file"
             value = {description}
@@ -271,9 +259,9 @@ console.log(docId)
           
             <br />
 
-            <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Collection Details</label>
+            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Collection Details</label>
             <input 
-            style = {{marginBottom: 35, color:'white'}}
+            style = {{marginBottom: 35, color:'black'}}
             name = "nft-img"
             type = "file"
             onChange = {(e) => {
@@ -283,9 +271,9 @@ console.log(docId)
             ></input>
             <br />
 
-            <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Provenance History</label>
+            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Provenance History</label>
             <input 
-            style = {{marginBottom: 35, color:'white'}}
+            style = {{marginBottom: 35, color:'black'}}
             name = "nft-img"
             type = "file"
             onChange = {(e) => {
@@ -295,9 +283,9 @@ console.log(docId)
             ></input>
             <br />
             
-            <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="price">NFT Price (ETH)</label>
+            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="price">NFT Price (ETH)</label>
             <input 
-            style = {{border:'2px solid white',color:'white', borderRadius:999, padding:12,marginBottom: 35}}
+            style = {{border:'2px solid black',color:'black', borderRadius:999, padding:12,marginBottom: 35}}
             name = "price"
             type = "number"
             value = {price}
@@ -307,9 +295,9 @@ console.log(docId)
             <br />
 
             
-            <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">NFT Image</label>
+            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">NFT Image</label>
             <input 
-            style = {{marginBottom: 35, color:'white'}}
+            style = {{marginBottom: 35, color:'black'}}
             name = "nft-img"
             type = "file"
             onChange = {(e) => {
@@ -320,7 +308,7 @@ console.log(docId)
             <br />
 
         <div {...getRootProps()}>
-          <label class = 'mt-4 text-white text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} >Collection Images</label><input {...getInputProps()} style = {{color:'white',backgroundColor:'transparent'}} />
+          <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} >Collection Images</label><input {...getInputProps()} style = {{color:'black',backgroundColor:'transparent'}} />
         </div>
         
         <button onClick={uploadPost} 
