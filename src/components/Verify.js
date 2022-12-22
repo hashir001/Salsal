@@ -1,21 +1,12 @@
-import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
-import { useLocation, useParams,Link } from 'react-router-dom';
+import {useParams } from 'react-router-dom';
 import {  useState } from 'react';
-import MarketplaceJSON from "../Marketplace.json";
 import React from 'react';
-import { storage, db } from '../firebase'
-import { v4 } from "uuid";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  listAll,
-  list,
-} from "firebase/storage";
-import { collection, addDoc, getDocs, serverTimestamp, updateDoc, doc, arrayUnion, query, where, onSnapshot, snapshotEqual} from 'firebase/firestore';
+import { db } from '../firebase'
+import { collection,query, where, onSnapshot} from 'firebase/firestore';
 import { useEffect } from "react";
 import VerifyCard from "./VerifyCard";
 import '../style1.css';
+import { Flex, Heading } from "@chakra-ui/react";
 
 
 export default function Verify() {
@@ -49,17 +40,14 @@ export default function Verify() {
       
     
   return (
-       <div className="wrapper">
-        <ul>
+       <Flex overflow='hidden' flexDir='column' justify='space-around' align={'center'}>
+        <Heading letterSpacing='tight' fontSize='50px' mt={20}>All Unverified Collections</Heading>
         {(data) ? data.map((value) => (
-          <div>
+          <Flex boxShadow={'xl'} overflow='hidden'>
             <VerifyCard link = {link} collectionData = {value}/>
-          </div>
+          </Flex>
         )):null}
-      </ul>
-       
-
-       </div> 
+       </Flex> 
   )
 }
 

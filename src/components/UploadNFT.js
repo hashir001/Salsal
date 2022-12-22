@@ -8,6 +8,7 @@ import {
   listAll,
   list,
 } from "firebase/storage";
+import { Radio, RadioGroup } from '@chakra-ui/react'
 import { collection, addDoc, getDocs, serverTimestamp, updateDoc, doc, arrayUnion, setDoc} from 'firebase/firestore';
 import { useCallback } from 'react'
 import Dropzone from 'react-dropzone'
@@ -18,9 +19,21 @@ import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
 import Marketplace from '../Marketplace.json';
 import { useLocation } from "react-router";
 import '../style1.css';
+import { Button, Divider, Flex, FormControl, FormHelperText, FormLabel, Heading, Input, Stack, Tooltip } from '@chakra-ui/react';
+import {
+  Modal,
+  useDisclosure,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react'
 
 
 function UploadNFT() {
+  const { isOpen, onOpen, onClose } = useDisclosure()
   const ethers = require("ethers");
   const [ name, setName ] = useState('');
   const [ description, setDescription ] = useState('');
@@ -121,7 +134,7 @@ let docRef;
     docRef = doc(db, "Collection", docId)
 }
 
-const updateVerified = () => {
+const updateVerified = async() => {
    updateDoc(docRef,{
    Verified: 'No',
    NFTImageIPFS: fileURL
@@ -130,52 +143,7 @@ const updateVerified = () => {
 
 }
 
-async function uploadToBlockchain(e) {
-  e.preventDefault();
- 
-  try {
-      const metadataURL = await uploadMetadataToIPFS();
-
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-
-      //updateMessage("Please wait.. uploading")
-
-      let contract = new ethers.Contract(Marketplace.address, Marketplace.abi, signer)
-
-      const dateInSecs = Math.floor(new Date().getTime() / 1000);
-
-      let listedToken = await contract.createCollection(fileURL, collectionId, dateInSecs, detDoc, provDoc);
-      alert("Successfully created collection!");
-      updateVerified();
-      contract.on("CollectionCreated", (_tokenId, _identifier, _uri, _verified, _status, _additional, _prov, event ) => {
-        let info = {
-            tokenId: _tokenId.toNumber(),
-            tokenIdentifier: _identifier,
-            verificationFileURI: _uri,
-            verified: _verified,
-            verificationStatus: _status,
-            additionalDetailsFileIPFS: _additional,
-            provenanceFileIPFS: _prov,
-            transactionData: event
-        }
-        console.log(JSON.stringify(info, null, 4))
-    })
-     
-      setName('');
-      setPrice('');
-      setDescription('');
-      //window.location.replace("/")
-  }
-  catch(e) {
-      alert( "Upload error" + e )
-      console.log("Error: " + e)
-  }
-}
-
 const uploadPost = async(e) => {
-  e.preventDefault();
   const colID = v4();
   setCollectionId(colID);
 
@@ -186,9 +154,11 @@ const uploadPost = async(e) => {
     Price: price,
     Collector_Address: data.address,
     NumberOfVerifiers:0,
+    collectorUID: data.uid,
     Timestamp: serverTimestamp()
     })
 
+   
     setDocID(docRef.id);
 
     await Promise.all(
@@ -214,10 +184,49 @@ const uploadPost = async(e) => {
         ProvenanceHistoryIPFS:provDoc
       })
     })
-
     setReady(true);
-    
+    onOpen();
 }
+
+
+async function uploadToBlockchain(e) {
+  e.preventDefault();
+  try {
+      const metadataURL = await uploadMetadataToIPFS();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      let contract = new ethers.Contract(Marketplace.address, Marketplace.abi, signer)
+
+      const dateInSecs = Math.floor(new Date().getTime() / 1000);
+      onClose();
+      let listedToken = await contract.createCollection(fileURL, collectionId, dateInSecs, detDoc, provDoc);
+      alert("Successfully created collection!");
+      await updateVerified();
+      contract.on("CollectionCreated", (_tokenId, _identifier, _uri, _verified, _status, _additional, _prov, event ) => {
+        let info = {
+            tokenId: _tokenId.toNumber(),
+            tokenIdentifier: _identifier,
+            verificationFileURI: _uri,
+            verified: _verified,
+            verificationStatus: _status,
+            additionalDetailsFileIPFS: _additional,
+            provenanceFileIPFS: _prov,
+            transactionData: event
+        }
+        console.log(JSON.stringify(info, null, 4))
+    })
+     
+      setName('');
+      setPrice('');
+      setDescription('');    
+  }
+  catch(e) {
+      alert( "Upload error" + e )
+      console.log("Error: " + e)
+  }
+}
+
 
 
 
@@ -231,100 +240,92 @@ const uploadPost = async(e) => {
       const selected_images = selectedImages?.map(file=>(
         <div></div>
       ))
+
+      const hiddenFileInput = React.useRef(null);
+      const handleClick = event => {
+        hiddenFileInput.current.click();
+      };
+
+      const hiddenFileInput2 = React.useRef(null);
+      const handleClick2 = event => {
+        hiddenFileInput2.current.click();
+      };
+
+      const hiddenFileInput3 = React.useRef(null);
+      const handleClick3 = event => {
+        hiddenFileInput3.current.click();
+      };
+
+      const hiddenFileInput4 = React.useRef(null);
+      const handleClick4 = event => {
+        hiddenFileInput4.current.click();
+      };
       
-      return (
-        <div style={{position:'relative'}}className='wrapper'>
-          <h1 style = {{fontSize:44,marginTop:30,color:'black',position:'absolute',left:'32%',top:40}}>Upload Your Collection</h1>
-          <div style={{position:'absolute',left:'25%',top:'8rem',padding:40,border:'2px solid black',marginTop:20}}>
-
-        <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}}for="name">Name</label>
-            <input 
-            style = {{border:'2px solid black',color:'black', borderRadius:999, padding:12,marginBottom: 35}}
-            name = "name"
-            type = "text"
-            value = {name}
-            onChange = {(e) => setName(e.target.value)}
-            ></input>
-
-            <br />
-
-            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Description</label>
-            <textarea 
-            style = {{marginBottom: 35, color:'black',border:'2px solid black',backgroundColor:'white'}}
-            name = "nft-img"
-            type = "file"
-            value = {description}
-            onChange = {(e) => setDescription(e.target.value)}
-            ></textarea>
+      
+      
+      return(
+        <Flex flexDir='column' align='center' h='60vh' justify='center'mt='5%' mb={10}>
+          <Heading fontSize='5xl' fontWeight='extrabold' letterSpacing='tight' mb={1} mt={12}>Upload Collection</Heading>
           
-            <br />
+          <Stack direction='column' borderWidth='3px'mt={8} boxShadow='2xl' w='600px' h='900px' px='50px' py='40px'>
+          <FormControl>
+            <FormLabel  fontWeight='bold'>Collection Name</FormLabel>
+            <Input  type='text' value = {name} onChange = {(e) => setName(e.target.value)} mb={4}/>
 
-            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Collection Details</label>
-            <input 
-            style = {{marginBottom: 35, color:'black'}}
-            name = "nft-img"
-            type = "file"
-            onChange = {(e) => {
-              setDetDoc(e.target.files[0]);
-              OnChangeDetails(e);
-            }}
-            ></input>
-            <br />
+            <FormLabel fontWeight='bold'>Description</FormLabel>
+            <Input type='text' value = {description} onChange = {(e) => setDescription(e.target.value)} mb={4}/>
 
-            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">Provenance History</label>
-            <input 
-            style = {{marginBottom: 35, color:'black'}}
-            name = "nft-img"
-            type = "file"
-            onChange = {(e) => {
-              setProvDoc(e.target.files[0]);
-              OnChangeProvenance(e);
-            }}
-            ></input>
-            <br />
+            <FormLabel fontWeight='bold'>(Optional) NFT Price</FormLabel>
+            <Input mb={4} type='number' value = {price} onChange = {(e) => setPrice(e.target.value)} />
             
-            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="price">NFT Price (ETH)</label>
-            <input 
-            style = {{border:'2px solid black',color:'black', borderRadius:999, padding:12,marginBottom: 35}}
-            name = "price"
-            type = "number"
-            value = {price}
-            onChange = {(e) => setPrice(e.target.value)}
-            
-            ></input>
-            <br />
+            <Stack direction='row' justify='space-between'>
 
-            
-            <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} for="nft-img">NFT Image</label>
-            <input 
-            style = {{marginBottom: 35, color:'black'}}
-            name = "nft-img"
-            type = "file"
-            onChange = {(e) => {
-              setNftImg(e.target.files[0]);
-              OnChangeFile(e);
-            }}
-            ></input>
-            <br />
+            <Flex flexDir='column' justify='space-between' >
+            <FormLabel fontWeight='bold' display='inline' mb={2} >Collection Details File</FormLabel>        
+            <FormLabel fontWeight='bold' display='inline' mb={2}>Provenance File</FormLabel>
+            <FormLabel fontWeight='bold' display='inline'mb={2} >NFT Image</FormLabel>
+            <FormLabel fontWeight='bold' display='inline' mb={2}>(Optional) Additional Images</FormLabel>
+            </Flex>
 
-        <div {...getRootProps()}>
-          <label class = 'mt-4 text-black text-2xl text-center mr-2' style = {{fontSize:36,marginRight:40}} >Collection Images</label><input {...getInputProps()} style = {{color:'black',backgroundColor:'transparent'}} />
-        </div>
-        
-        <button onClick={uploadPost} 
-        disabled = {!(name && price && description && fileURL && detDoc && provDoc)}
-        style={{
-        marginTop:30,
-        border:"3px solid",
-        borderRadius:999,
-        padding:14}}>Upload</button>
+            <Flex flexDir='column' justify='space-between' >
+            <Button bg='blue.900' _hover={{bg:'blue.700'}} _focus={{bg:'blue.700'}} mb={2}fontWeight='semibold' color='white' onClick={handleClick}>Upload Document</Button>
+            <Input borderWidth='0px' style={{display:'none'}} ref={hiddenFileInput} type='file'  onChange = {(e) => {setDetDoc(e.target.files[0]); OnChangeDetails(e)}}/> 
 
-        {ready? <button onClick = {uploadToBlockchain}> Upload To Blockchain</button> : null}
+            <Button bg='blue.900' _hover={{bg:'blue.700'}} _focus={{bg:'blue.700'}}  mb={2} color='white' onClick={handleClick2}>Upload Document</Button>
+            <Input borderWidth='0px' style={{display:'none'}} ref={hiddenFileInput2} type='file' onChange = {(e) => {setProvDoc(e.target.files[0]); OnChangeProvenance(e)}}/> 
 
-        </div>
-        </div>
+            <Button bg='blue.900' _hover={{bg:'blue.700'}}_focus={{bg:'blue.700'}}mb={2} color='white' onClick={handleClick3}>Upload Image</Button>
+            <Input borderWidth='0px' style={{display:'none'}} ref={hiddenFileInput3} type='file' onChange = {(e) => {setNftImg(e.target.files[0]); OnChangeFile(e)}}/> 
+           
+            <Button bg='blue.900' _hover={{bg:'blue.700'}}_focus={{bg:'blue.700'}} mb={2}color='white' onClick={handleClick4}>Upload Images</Button>
+            <div {...getRootProps()}>
+            <input {...getInputProps()} style={{display:'none'}} ref={hiddenFileInput4} />
+            </div>
 
+            </Flex>
+            </Stack>
+            </FormControl>
+          {/* <Tooltip hasArrow placement='top' label='We first upload to the IPFS and Firebase after which we will upload to the Blockchain' bg='blue.200' fontSize='20px'></Tooltip> */}
+            <Button _hover={{bg:'red.700'}} _focus={{bg:'red.700'}} bg="red.900" color='white' fontSize='13px' alignSelf="center" onClick={uploadPost}> Submit</Button>
+          {/* {ready?<Button _hover={{bg:'red.700'}} _focus={{bg:'red.700'}} bg="red.900" color='white' fontSize='15px' mx={2} my={2} alignSelf="center"  onClick = {uploadToBlockchain}> Upload To Blockchain</Button> : null} */}
+          </Stack>
+          <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Proceed With Transaction</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+          </ModalBody>
 
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={uploadToBlockchain} >
+              Confirm
+            </Button>
+            <Button onClick={onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+        </Flex>
       )
 }
 

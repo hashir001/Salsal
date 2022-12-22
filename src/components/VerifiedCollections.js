@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import CreateNFTCard from "./CreateNFTCard";
 import { LoginContext } from './LoginContext'
 import '../style1.css';
+import { Flex, Heading } from "@chakra-ui/react";
 
 
 export default function VerifiedCollections() {
@@ -39,15 +40,14 @@ useEffect(()=>{
    
 console.log(collectionData)
   return (
-       <div className="wrapper flex justify-around">
-        <ul>
+       <Flex flexDir={'column'} align='center' mt='80px'>
+        <Heading>Verified Collections</Heading>
         {(collectionData) ? collectionData.map((value) => (
-          <div>
+          <Flex>
             <CreateNFTCard key = {value.id} collectionData = {value}/>
-          </div>
+          </Flex>
         )):null}
-        </ul>
-       </div> 
+       </Flex> 
   )
 }
 

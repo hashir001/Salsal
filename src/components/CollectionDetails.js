@@ -1,28 +1,30 @@
 import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
-import { useLocation, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {  useState, useContext } from 'react';
 import Marketplace from "../Marketplace.json";
 import React from 'react';
-import { Text, Highlight, Heading, Button } from "@chakra-ui/react";
-import { storage, db, } from '../firebase'
-import { v4 } from "uuid";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  listAll,
-  list,
-} from "firebase/storage";
+import { Text, Highlight, Heading, Flex, } from "@chakra-ui/react";
+import { db, } from '../firebase'
 import { collection, addDoc, getDocs, serverTimestamp, updateDoc, doc, arrayUnion, query, 
-  where, onSnapshot, increment,snapshotEqual, writeBatch, arrayRemove} from 'firebase/firestore';
+  where, onSnapshot, arrayRemove, setDoc} from 'firebase/firestore';
 import { useEffect } from "react";
-import VerifyCard from "./VerifyCard";
 import '../style1.css'
 import ReqCard from "./ReqCard";
 import { LoginContext } from './LoginContext'
-import firebase from "firebase/compat/app"
 import 'firebase/compat/firestore';
-import { useCollection, useCollectionData } from 'react-firebase-hooks/firestore'
+import { useCollectionData } from 'react-firebase-hooks/firestore'
+import {
+  Button,
+  useDisclosure,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalOverlay,
+  ModalFooter,
+} from '@chakra-ui/react';
+import { ChatIcon, CheckCircleIcon, CheckIcon, InfoOutlineIcon, SettingsIcon } from "@chakra-ui/icons";
 
 export default function CollectionDetails() {
     const [ allData, setAllData ] = useState();
@@ -43,23 +45,29 @@ export default function CollectionDetails() {
     const [ verified, setVerified ] = useState('');
     const [ details, setDetails ] = useState('');
     const [ documentID, setDocumentID ] = useState('');
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [scrollBehavior, setScrollBehavior] = React.useState('inside')
+
+    console.log(names[0])
 
     const [ verifiers, setVerifiers ] = useState([]);
     const [ emails, setEmails ] = useState('');
+    const [ userIDs, setUserIDs ] = useState('');
     const [ emails2, setEmails2 ] = useState([]);
     const { data, setData } = useContext(LoginContext);
     const ethers = require("ethers");
 
     const collectionRef = collection(db, "Collection");
     const accountsCollectionRef = collection(db, "Accounts");
+
     const [accountDocs, loading, error] = useCollectionData(accountsCollectionRef);
   
     let docRef;
-
     if(documentID != ''){
-         console.log(documentID.toString())
          docRef = doc(db, "Collection", documentID.toString())
     }
+
+
     let { id } = useParams();
     const q = query(collectionRef, where("DocumentID","==",id))
 
@@ -72,6 +80,10 @@ export default function CollectionDetails() {
     }
     const verifyLink = {
       pathname:"/boardverify/"+id
+    }
+
+    const boardChat = {
+      pathname: '/boardchat/'+id
     }
 
     async function OnChangeFile(e) {
@@ -97,6 +109,7 @@ export default function CollectionDetails() {
   })
   .then(() => console.log('success'))
 }
+
 
   async function uploadToBlockchain(e) {
     e.preventDefault();
@@ -149,9 +162,12 @@ export default function CollectionDetails() {
         getDocs(accountsCollectionRef)
         .then((snapshot) => {
             setEmails(snapshot.docs.map((doc) => (doc.data().email)));
+            setUserIDs(snapshot.docs.map((doc) => (doc.data().uid)));
         })
         .catch(err => console.log(err)); 
       }
+
+      console.log(pendingVerifiers[0])
  
 
 useEffect(()=>{
@@ -170,31 +186,68 @@ useEffect(()=>{
     setApprovedVerifiers(snapshot.docs.map(doc => doc.data().ApprovedVerifiers))
     setRejectedVerifiers(snapshot.docs.map(doc => doc.data().RejectedVerifiers))
   })
-    //setEmails(accountDocs.map(doc => doc.email));
     getDocuments();
 },[])
-
-console.log(emails2)
 
 async function verify(pv,e){
   e.preventDefault();
   updateDoc(docRef,{
     PendingVerifiers: arrayRemove(pv),
-    RejectedVerifiers: arrayRemove(pv),
-    ApprovedVerifiers: arrayUnion(pv)
+    PendingUIDs: arrayRemove(pv.uid),
+
+    RejectedUIDs: arrayRemove(pv.uid),
+    RejectedVerifiers: arrayRemove(pv.email),
+
+    ApprovedVerifiers: arrayUnion(pv.email),
+    ApprovedUIDs: arrayUnion(pv.uid)
   })
   .then(() => console.log('success'))
+
+  
+ const newDocRef = doc(collection(db, "Accounts",pv.uid,"Notifications"));
+      await setDoc(
+          newDocRef, 
+          {
+            createdAt: serverTimestamp(),
+            expertUID: pv.uid,
+            time: new Date().toLocaleString(),
+            email:pv,
+            seen:'no',
+            details: names[0] + ' was approved',
+            theDocID: newDocRef.id
+          }
+      )
 }
+
 
 async function remove(pv,e){
   e.preventDefault();
   console.log(pv)
   updateDoc(docRef,{
     PendingVerifiers: arrayRemove(pv),
-    ApprovedVerifiers: arrayRemove(pv),
-    RejectedVerifiers: arrayUnion(pv)
+    PendingUIDs: arrayRemove(pv.uid),
+
+    ApprovedVerifiers: arrayRemove(pv.email),
+    ApprovedUIDs: arrayRemove(pv.uid),
+
+    RejectedVerifiers: arrayUnion(pv.email),
+    RejectedUIDs: arrayUnion(pv.uid)
   })
   .then(() => console.log('success'))
+
+  const newDocRef = doc(collection(db, "Accounts",pv.uid,"Notifications"));
+      await setDoc(
+          newDocRef, 
+          {
+            createdAt: serverTimestamp(),
+            expertUID: pv.uid,
+            time: new Date().toLocaleString(),
+            email:pv,
+            seen:'no',
+            details: names[0] + ' was rejected',
+            theDocID: newDocRef.id
+          }
+      )
 }
 
 const addToArray = (arr1,arr2) =>{
@@ -213,59 +266,107 @@ rejectedVerifiers[0]? addToArray(rejectedVerifiers,rejected) : <></>;
 console.log(pending)
 console.log(emails)
 
-
+const expertprofileLink = {
+  pathname:"/expertprofile/"+data.uid
+}
     
   return (
        <div>
-        <Link to = {expertSubmissionLink}><button 
-class="flex items-center justify-center
-      py-2 px-3 text-lg font-medium text-center text-black bg-rose-900 rounded-lg  
-      focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 
-      dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-             Expert Reviews
-</button></Link>
+       
+<Flex overflow='hidden' flexDir='column'  align={'center'}>
 
-<Link to = {manageVerifiersLink}><button 
-class="flex items-center justify-center
-      py-2 px-3 text-lg font-medium text-center text-black bg-rose-900 rounded-lg  
-      focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 
-      dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-             Manage Verifiers
-</button></Link>
-
-<Link to = {verifyLink}><button 
-class="flex items-center justify-center
-      py-2 px-3 text-lg font-medium text-center text-black bg-rose-900 rounded-lg  
-      focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 
-      dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-             Verify Collection
-</button></Link>
-
-
-
-<h1 class = "mt-20 text-black text-5xl text-center">Collection Data</h1>
-
-        <ul>
-        {(allData) ? allData.map((value) => (
-          <div>
-            <ReqCard collectionData = {value}/>
-          </div>
-        )):null}
-      </ul>
+        <Flex flexDir={'row'} justify={'space-between'}>
+        <Flex flexDir='column' justify={'center'} mt='130px' pr='40px'>
+          <Link to = {expertSubmissionLink}><Button width='250px'variant='outline' mb='15px' leftIcon={<InfoOutlineIcon color='black' />} colorScheme='teal'>Expert Reviews</Button></Link>
+          <Button  width='250px' leftIcon={<SettingsIcon color='black' />} mb='15px'colorScheme='teal' onClick={onOpen}variant='outline'>Manage Verifiers</Button>
+          {data.email === 'agurvotemanager@gmail.com' | data.email === 'hashirzaf99@gmail.com' ? <Link to = {verifyLink}><Button width='250px' mb='15px'leftIcon={<CheckIcon color='black' />} variant='outline' colorScheme='teal' >Verify Collection</Button></Link> : null}
+          <Link to = {boardChat}><Button  width='250px' leftIcon={<ChatIcon color='white'/>} colorScheme='teal' variant='solid'>Chat with Board Members</Button></Link>
+        </Flex>
+        <Flex flexDir={'column'}>
+          <Heading letterSpacing='tight' align='center' fontSize='50px' mt={20} mr='180px'>Collection Data</Heading>
+          {(allData) ? allData.map((value) => (
+            <Flex boxShadow={'xl'} overflow='hidden'>
+              <ReqCard collectionData = {value}/>
+            </Flex>
+          )):null}
+          </Flex>
+        </Flex>
+       
       
-      <h1 class = "mt-20 text-black text-5xl text-center">More Images</h1>
+      <Heading letterSpacing='tight' fontSize='50px' mt={20}>More Images </Heading>
       <div class="flex justify-around mt-20 mb-20 flex-wrap gap-[70px]"> 
       {(secondaryUrls) ? secondaryUrls.map((imageURL) => imageURL.map((url) => {
         return(
-          <div class="rounded-full shadow-lg  max-w-xs">
-                <img key = {url} style = {{width:300, height:300}} src={url}></img>
-            </div>
+          <Flex flexDir={'row'}>
+            <img key = {url} style = {{width:350, height:320}} src={url}></img>
+          </Flex>
     
       )}))
       : null} 
+      </div>
+    </Flex>
+      
+    <Modal
+        size={'lg'}
+        onClose={onClose}
+        isOpen={isOpen}
+        scrollBehavior={scrollBehavior}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize={'30px'}>Pending Verifiers</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Flex flexDir='column'> 
+            <Flex flexDir='column'  borderWidth="2px" boxShadow={'xl'}> 
+            
+            {emails && pending? pending.map(pv => emails.includes(pv.email)?
+      <div key = {Math.random()}>
+        <Text fontWeight='normal' fontSize={'20px'}><strong>Email</strong>: {pv.email}</Text>
+  
+        <br/>
+        <Flex flexDir='row'> 
+        <Link to={'/expertprofile/' + pv.uid}>
+        <Button
+        fontSize={'20px'}
+          colorScheme="gray"
+          align="center"
+          mx="auto"
+        >
+          View Profile
+        </Button></Link>
+        <Button
+        fontSize={'20px'}
+          colorScheme="blue"
+          align="center"
+          mx="auto"
+          onClick={(e) => verify(pv,e)}
+        >
+          Approve
+        </Button>
+        <Button
+        fontSize={'20px'}
+          colorScheme="red"
+          align="center"
+          mx="auto"
+          onClick={(e) => remove(pv,e)}
+        >
+          Reject
+        </Button>
+        </Flex>
+      </div>:null):null} 
+            </Flex>
+            </Flex>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
       
       </div>
-      <h1 class = "mt-20 text-black text-5xl text-center">Pending Verifiers</h1>
+      )}
+      {/* <h1 class = "mt-20 text-black text-5xl text-center">Pending Verifiers</h1>
       {emails && pending? pending.map(pv => emails.includes(pv)?
       <div style={{border:'2px solid gray',marginTop:100,width:'50%',marginBottom:20,padding:30}} key = {Math.random()}>
         <h3 style={{marginLeft:30,marginTop:10,fontSize:22}}>Email: {pv}</h3>
@@ -312,9 +413,13 @@ class="flex items-center justify-center
         >
           Reject
         </Button>
-      </div>:null):null}
+      </div>:null):null} */}
 
-      <h1 class = "mt-20 text-black text-5xl text-center">Approved Verifiers</h1>
+
+
+
+
+      {/* <h1 class = "mt-20 text-black text-5xl text-center">Approved Verifiers</h1>
       {approved.map(pv => emails.includes(pv)?
       <div style={{border:'2px solid gray',marginTop:100,width:'50%',marginBottom:20}} key = {Math.random()}>
         <h3 style={{marginLeft:30,marginTop:10,fontSize:22}}>Email: {pv}</h3>
@@ -382,77 +487,8 @@ class="flex items-center justify-center
         >
           Approve
         </Button>
-      </div>:null)}
+      </div>:null)} */}
 
-      
-      <div style={{position:'relative'}}>
-      <div style={{position:'absolute',left:'32%',top:'2rem',padding:40,border:'2px solid black',marginTop:20}}>
-    <h1 style = {{fontSize:44,marginBottom:30,color:'black'}}> Submit Verification Details</h1>  
-
-    <div>
-      <p style = {{fontSize:20,marginBottom:2,color:'black'}}>Verified As Legitimate? (Choose Yes or No)</p>
-    <label class = 'mt-20 text-black text-2xl text-center mr-2' for="yes">Yes</label> 
-    <input 
-    type = "radio"
-    value = "Yes"
-    name = "verified"
-    onChange = {e => setVerified(e.target.value)} />
-    </div>
-
-    <br />
-    
-    <div>
-    <label class = 'mt-4 text-black text-2xl text-center mr-2' for="no">No</label> 
-    <input
-    style={{marginLeft:7}}
-    type = "radio"
-    value = "No"
-    name = "verified"
-    onChange = {e => setVerified(e.target.value)} />
-    </div>
-
-    <br />
-    
-    <div>
-    <label style={{fontSize:20,color:'black'}} for="status">Status</label>
-    <input 
-    name = "status"
-    type = "text"
-    value = {status}
-    onChange = {(e) => setStatus(e.target.value)}
-    style = {{margin: 10, color:'black',border: '2px solid black', borderRadius:999, padding:8,marginLeft:20}}
-    ></input>
-    </div>
-
-    <br />
-
-
-    <label style={{fontSize:20,color:'black'}} for="details">Additional Details</label>
-    <textarea 
-    name = "details"
-    type = "text"
-    value = {details}
-    onChange = {(e) => setDetails(e.target.value)}
-    style = {{marginBottom: 35, color:'black',border:'2px solid black',backgroundColor:'white'}}
-    ></textarea>
-
-    <br />
-    
-    <label style={{fontSize:20,color:'black',marginRight:30}} for="details">Verification File</label>
-    <input style={{marginBottom:50, color:'black'}}type={"file"} onChange={OnChangeFile}></input>
-       
-    <br />
-      <button onClick={uploadToBlockchain}
-      disabled = {!(status && fileURL && verified)}
-      style={{border:'3px solid black', marginTop:15, padding:10,borderRadius:999}}> Verify Collection</button>
-       </div> 
-       
-       </div>
-
-
-
-    </div>
-  )
-}
+ 
 
 

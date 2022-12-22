@@ -1,29 +1,18 @@
-import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
-import { useLocation, useParams, Link } from 'react-router-dom';
-import {  useState, useContext } from 'react';
-import Marketplace from "../Marketplace.json";
+import { useParams } from 'react-router-dom';
+import {  useState, useContext,useRef } from 'react';
 import React from 'react';
-import { storage, db, } from '../firebase'
-import { v4 } from "uuid";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  listAll,
-  list,
-} from "firebase/storage";
-import { collection, addDoc, getDocs, serverTimestamp, updateDoc, doc, arrayUnion, query, 
-  where, onSnapshot, increment,snapshotEqual, writeBatch} from 'firebase/firestore';
-import { useEffect } from "react";
-import VerifyCard from "./VerifyCard";
-import '../style1.css'
-import ReqCard from "./ReqCard";
+import { db, } from '../firebase'
+import { IconButton, Text } from '@chakra-ui/react'
+import { collection, addDoc, serverTimestamp} from 'firebase/firestore';
+  import { query, orderBy, limit } from "firebase/firestore";
 import { LoginContext } from './LoginContext'
-import firebase from "firebase/compat/app"
 import { useCollectionData } from 'react-firebase-hooks/firestore'
 import 'firebase/compat/firestore';
+import { Flex, Input, InputGroup, InputRightElement } from "@chakra-ui/react";
+import {IoMdSend} from 'react-icons/io'
 
 const ChatRoom = () => {
+  const dummy = useRef();
 const [ message, setMessage ] = useState('')
 const [ docID, setDocID ] = useState('')
 
@@ -31,7 +20,10 @@ let { id } = useParams();
 const { data, setData } = useContext(LoginContext);
 
 const collectionRef = collection(db, "Collection",id,"room");
-const [docs, loading, error] = useCollectionData(collectionRef);
+const q = query(collectionRef, orderBy("createdAt"), limit(30));
+const [messages] = useCollectionData(q, {idField: 'id'});
+
+
 
 const sendMessage = async(e) => {
     e.preventDefault();
@@ -39,61 +31,44 @@ const sendMessage = async(e) => {
     const docRef = await addDoc(collection(db, "Collection",id,'room'),{
        message:message,
        from: data.email,
+       createdAt: serverTimestamp(),
+       expertUID: data.uid,
        time: new Date().toLocaleString()
     })
-    
+  
     setDocID(docRef.id);
     setMessage('')
 }
 
-
-  return (
-    <div style={{margin:10}}>
-      <div 
-        className="chat-box"
-        style={{border:'1px solid black', width:'60%',padding:20,marginLeft:120}}>
-            {docs?.map(doc => <div 
-            style={{
-            backgroundColor:'#ADD8E6',
-            width:'60%',
-            margin:10,
-            border:'1px solid gray',
-            borderRadius:999,
-            overflow:'hidden',
-            padding:9,
-            paddingLeft:35}} 
-            key={Math.random()}>
-                <p style={{backgroundColor:'#ADD8E6'}}>From: {doc.from}</p>
-                <p style={{backgroundColor:'#ADD8E6'}}>Message: {doc.message}</p>
-                <p style={{backgroundColor:'#ADD8E6'}}>Time: {String(doc.time)}</p>
-                </div>)}
-
-        <input 
-        value={message}
-        onChange = {(e) => setMessage(e.target.value)}
-        placeholder='Type message' 
-        style={{border:'1px solid black',marginTop:20, width:350,borderRadius:999,overflow:'hidden',height:50,padding:20}}></input>  
-
-        <button 
-        style={{marginTop:20}}
-        onClick={sendMessage}
-        class="flex items-center justify-center
-        py-1 px-3  font-small text-center text-black bg-rose-900 rounded-lg  
-        focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 
-        dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-             Send Message
-        </button>     
-            
-    </div>
-
-
-
-
-
-    </div>
-
-
+  return(
+    <Flex flexDir={'column'} align='center' >
+    <Flex flexDir='column'  mt='100px'  borderWidth='5px'  w='50%'>
+      <Flex flexDir='column'  >
+        <Flex flexDir='column'>
+        {messages && messages.map(msg =>    
+          <Flex flexDir={'row'} justify={msg.from === data.email? 'start':'end'}>
+              <Flex flexDir={'column'}borderWidth={'2px'} borderRadius='2xl'  mx='10px' my='10px' px={'9px'}><Text ><strong pl='15px'>Message:</strong>{msg.message}</Text>
+              <Text><strong>From:</strong>{msg.from}</Text>
+              <Text><strong>Time:</strong>{msg.time}</Text>
+          </Flex>
+          </Flex> 
+        )}
+        </Flex>
+        <InputGroup>
+          <InputRightElement
+            pointerEvents='cursor'
+            mt='10px'
+            children={<IconButton bg="white" _hover={{bg:'white'}} onClick={sendMessage} size='sm' mx='20px' icon={<IoMdSend/>} />}
+          />
+          <Input  mt='10px' value={message} onChange = {(e) => setMessage(e.target.value)} type='text' placeholder='Enter Message' />
+        </InputGroup>
+      </Flex>
+    </Flex>
+    </Flex>
   )
 }
 
+
 export default ChatRoom
+
+{/* <ChatMessage key={msg.id} message={msg} email={data.email} /> */}

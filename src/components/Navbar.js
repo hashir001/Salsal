@@ -1,10 +1,6 @@
 import {
   BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
-  useRouteMatch,
-  useParams
 } from "react-router-dom";
 import { db, auth } from '../firebase'
 import {
@@ -12,18 +8,38 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
-import { collection, addDoc, getDocs, getDoc, onSnapshot, doc, get, query, where,orderByChild } from 'firebase/firestore';
-import { useEffect, useState, useContext } from 'react';
+import { collection, getDocs, onSnapshot, doc, query, where } from 'firebase/firestore';
+import { useEffect, useState, useContext,useCallback, useReducer } from 'react';
 import { useLocation } from 'react-router';
-import { AppContext } from '../App';
 import { LoginContext } from './LoginContext'
-import { StorageContext } from './StorageContext'
-import '../style1.css'
+import { BellIcon } from '@chakra-ui/icons';
+import {
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Button,
+  useColorModeValue,
+  useDisclosure,
+  HStack,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  FormControl,
+  ModalOverlay,
+  FormLabel,
+  Input,
+  ModalFooter,
+  Flex,
+} from '@chakra-ui/react';
+import { ChevronDownIcon } from '@chakra-ui/icons'
+import { Indicator } from "@mantine/core";
 
 
 function Navbar() {
-
-
+const { isOpen, onOpen, onClose } = useDisclosure();
 // Sign In
 const [ accounts, setAccounts ] = useState([]);
 const [ loginEmail, setLoginEmail ] = useState("");
@@ -34,50 +50,59 @@ const [ showMetaMask, setShowMetaMask ] = useState(false)
 
 const { data, setData } = useContext(LoginContext);
 
-const [ uid, setUID ] = useState("");
-
 const collectionRef = collection(db,"Accounts");
 
 if(isLoggedIn && (data.accountType == 'admin' | data.accountType == 'collector' | data.accountType == 'expert' )){
   setShowMetaMask(true);
 }
-console.log('address: ' + data.address);
 
 const getDocuments = async() => {
   getDocs(collectionRef)
   .then((snapshot) => {
-      
       setAccounts(snapshot.docs.map((doc) => ({...doc.data(), id: doc.id })));  
   })
   .catch(err => console.log(err)); 
-}
 
+  const collRef = query(collection(db,"Accounts",user.uid,"Notifications"),where("seen","==","no"));
+  getDocs(collRef)
+  .then((snapshot) => {
+    setNotifications(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))  
+  })
+  .catch(err => console.log(err));
+
+  const collRef2 = query(collection(db,"BoardNotifications"),where("seen","==","no"));
+  getDocs(collRef2)
+  .then((snapshot) => {
+    setBoardNotifications(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))  
+  })
+  .catch(err => console.log(err));
+}
 
 const setAccountType = async(user) => {
   const docRef = doc(db,'Accounts',user.uid);
 
   onSnapshot(docRef, (doc) => {
-    setData({...data, accountType:doc.data().type, email:user.email,uid:user.uid})
-    console.log(doc.data().type)
-    localStorage.setItem('accountType', JSON.stringify(doc.data().type));
-    localStorage.setItem('address', JSON.stringify(currAddress))
+    setData({...data, accountType:doc.data().type, email:user.email, uid:user.uid})
   })
 }
 
+
+
 useEffect(()=>{
   setAccountType(user);
+  getDocuments();
 },[user])
 
+const [ notifications, setNotifications ] = useState();
+const [ boardNotifications, setBoardNotifications ] = useState();
 
 useEffect(()=>{
 onAuthStateChanged(auth, (currentUser) => {
   if(currentUser){
   setUser(currentUser); 
-  console.log(currentUser)
 }     
 });  
 
-getDocuments();
 },[])
 
 const login = async(e) => {
@@ -100,7 +125,7 @@ const logout = async () => {
 
 };
 
-// end
+
 
 const [connected, toggleConnect] = useState(false);
 const location = useLocation();
@@ -118,11 +143,18 @@ async function getAddress() {
 
 useEffect(()=>{
   setData({ ...data, address: currAddress })
+  
 },[currAddress])
 
-function updateButton() {
-  //document.querySelector('.enableEthereumButton').style.visibility   = "hidden";
+
+
+let notifLength;
+
+if(notifications !== undefined && notifications.length !== 0  ){
+  console.log('length',notifications.length) 
+  notifLength = notifications.length
 }
+
 
 async function connectWebsite() {
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
@@ -137,7 +169,6 @@ async function connectWebsite() {
     
     await window.ethereum.request({ method: 'eth_requestAccounts' })
       .then(() => {
-        updateButton();
         getAddress();
         window.location.replace(location.pathname)
       });
@@ -173,7 +204,6 @@ async function connectWebsite() {
       console.log('Metamask is installed!')
       getAddress();
       toggleConnect(val);
-      updateButton();
     }
 
     if (typeof window.ethereum !== 'undefined') {
@@ -190,103 +220,234 @@ async function connectWebsite() {
   pathname:"/profile/"+user.uid
 }
 
+const expertprofileLink = {
+  pathname:"/expertprofile/"+user.uid
+}
+
+const notifLink = {
+  pathname:"/notif/"+user.uid
+}
+
+const expertnotifLink = {
+  pathname:"/expertnotif/"+user.uid
+}
+
+const boardnotifLink = {
+  pathname:"/boardno"
+}
+
 
     return (
-     <div className='banner'>
-      <nav style={{marginLeft:500}}className='navbar'>
-        {/* <Link to = '/'>
-          <img src = {logo}></img>
-        </Link> */}
-
-        <ul>
-            <li style={{color:'black'}}><Link to = '/'>Home</Link></li>
-            <li><Link to = '/marketplace'>Marketplace</Link></li>
-            <li><Link to = '/board'>Board</Link></li> 
-
-            
-            {((data.accountType == 'collector'| data.accountType == 'admin') && data.address != '0x') ?
-            <div className='dropdown'>
-            <li className='dropbtn'>Collector</li>
-            <div className='dropdown-content'>
-            <li><Link style={{display:"block",paddingTop:3}} to = '/upload'>Upload Collection</Link></li>
-            <br /><br />
-            <li><Link style={{display:"block", width:50}} to = '/verified'>Verified</Link></li>
-            <br /><br />
-            <li><Link style={{display:"block", width:50}} to = {profileLink}>Profile</Link></li>
-            </div>
-            </div> : null} 
-
-            {((data.accountType == 'expert'| data.accountType == 'admin') && data.address != '0x') ?
-            <div className='dropdown'>
-            <li className='dropbtn'>Expert</li>
-            <div className='dropdown-content'>
-            <li><Link style={{display:"block",paddingTop:3}} to = '/verify'>Verify</Link></li>
-            <br /><br/>
-            </div>
-            </div> : null}
-
-            <div className='dropdown'>
-            {(data.accountType == 'admin' | data.accountType == 'collector' | data.accountType == 'expert') ?
-            <li className='dropbtn'>Sign Out</li>:
-            <li className='dropbtn'>Sign In</li>}
-            <div className='dropdown-content'>
-            
-
-            
-           {!(data.accountType == 'admin' | data.accountType == 'collector' | data.accountType == 'expert')?
-           <>
-            <input
-            style = {{color:'black',display:"block",marginTop:6,marginLeft:20,border:'2px solid black',borderRadius:999,paddingLeft:13}}
-            type="text"
-            placeholder="Email..."
-            onChange={(e) => setLoginEmail(e.target.value)}/>
-            <br /><br/>
-
-            <input
-            style={{color:'black',position:'relative',bottom:30,marginLeft:20,border:'2px solid black', borderRadius:999,paddingLeft:13}}
-            type="password"
-            placeholder="Password..."
-            onChange={(event) => {
-            setLoginPassword(event.target.value);
-               }}/> </>
-               : null}
+     <div>
        
-          <br /><br />
+           <HStack bg='#020202'  justify='center' h='80px'>
+          
+            
+            <Menu>
+            <Link to = '/'>
+              <Button
+              fontWeight= 'semibold'
+              ml='-200'
+              pl={6} 
+              py='22px' 
+              bg='black'
+              borderColor='black'
+              color='white'
+              borderRadius='lg'
+              _hover={{bg:'blue.400'}}
+              borderWidth='1px'
+              fontSize='xl'>Home</Button></Link>
 
-          {(data.accountType == 'admin' | data.accountType == 'collector' | data.accountType == 'expert') ?
-         <button style={{border:'1px solid black',padding:2,position:'relative',bottom:40,left:13}} 
-          onClick={logout}> Sign Out </button> 
+              <Link to = '/marketplace'>
+              <Button
+              fontWeight= 'semibold'
+              mr='-1'
+              px={2} 
+              py='22px' 
+              bg='black'
+              borderColor='black'
+              color='white'
+              borderRadius='lg'
+              _hover={{bg:'blue.400'}}
+              _focus={{bg:'blue.400'}}
+              borderWidth='1px'
+              fontSize='xl'>Marketplace</Button></Link></Menu>
+              {((data.accountType == 'collector') && data.address != '0x') ?
+  <Menu>
+            <MenuButton
+             fontWeight= 'semibold'
+             mr='-1'
+             py={2} 
+             bg='black'
+             borderColor='black'
+             color='white'
+             borderRadius='lg'
+             _hover={{bg:'blue.400'}}
+             borderWidth='1px'
+             fontSize='xl'
+              _expanded={{ bg: 'blue.400' }}
+            >
+              Collector <ChevronDownIcon />
+            </MenuButton>
+            <MenuList>
+            <Link to = '/upload'><MenuItem>Upload Collection</MenuItem></Link>
+            <Link to = '/verified'><MenuItem>Verified</MenuItem></Link>
+            <Link to = {profileLink}><MenuItem>Profile</MenuItem></Link>
+             
+            </MenuList>
+          </Menu>
+          
+             : null} 
+
+
+
+  {((data.accountType == 'admin') && data.address != '0x') ?
+  <Menu>
+            <MenuButton
+             fontWeight= 'semibold'
+             mr='-1'
+             py={2} 
+             bg='black'
+             borderColor='black'
+             color='white'
+             borderRadius='lg'
+             _hover={{bg:'blue.400'}}
+             borderWidth='1px'
+             fontSize='xl'
+              _expanded={{ bg: 'blue.400' }}
+            >
+              Admin <ChevronDownIcon />
+            </MenuButton>
+            <MenuList>
+            <Link to = '/admin'><MenuItem>Register Users</MenuItem></Link>             
+            </MenuList>
+          </Menu>
+          
+             : null} 
+
+
+        {((data.accountType == 'expert') && data.address != '0x') ?
+        <Menu>
+        <MenuButton
+             fontWeight= 'semibold'
+             mr='-1'
+             py={2} 
+             bg='black'
+             borderColor='black'
+             color='white'
+             borderRadius='lg'
+             _hover={{bg:'blue.400'}}
+             borderWidth='1px'
+             fontSize='xl'
+            _expanded={{ bg: 'blue.400' }}
+        >
+          Expert <ChevronDownIcon />
+        </MenuButton>
+        <MenuList>
+        <Link to = '/verify'><MenuItem>View All Collections</MenuItem></Link>
+        <Link to = {'/pending/' + data.uid}><MenuItem>Pending Requests</MenuItem></Link>
+        <Link to = {'/approved/' + data.uid}><MenuItem>Approved Requests</MenuItem></Link>
+        <Link to = {'/rejected/' + data.uid}><MenuItem>Rejected Requests</MenuItem></Link>
+        <Link to = {expertprofileLink}><MenuItem>Profile</MenuItem></Link>
+        </MenuList>
+      </Menu>
+             : null}
+
+
+{((data.accountType == 'board') && data.address != '0x') ?
+        <Menu>
+        <MenuButton
+             fontWeight= 'semibold'
+             mr='-1'
+             py={2} 
+             bg='black'
+             borderColor='black'
+             color='white'
+             borderRadius='lg'
+             _hover={{bg:'blue.400'}}
+             borderWidth='1px'
+             fontSize='xl'
+            _expanded={{ bg: 'blue.400' }}
+        >
+          Central Board <ChevronDownIcon />
+        </MenuButton>
+        <MenuList>
+        <Link to = '/board'><MenuItem>View Collections</MenuItem></Link>
+        </MenuList>
+      </Menu>
+             : null}
+
+{(data.accountType == 'admin' | data.accountType == 'collector'  | data.accountType == 'expert' | data.accountType == 'board') ?
+         <Button fontWeight= 'semibold' mr='-1' px={2} 
+         py='22px' 
+         bg='black'
+         borderColor='black'
+        color='white'
+        borderRadius='lg'
+        _hover={{bg:'blue.400'}}
+        fontSize='xl'
+        borderWidth='1px' onClick={logout}> Sign Out </Button> 
           :
-          <button 
-            style={{border:'1px solid black',padding:2,position:'relative',bottom:40,left:13}}
-            onClick={async(e) =>{
-            e.preventDefault();
-            await login();
-            }}> Login </button>}
+          <Button 
+          py='22px' 
+         bg='black'
+         borderColor='black'
+        color='white'
+        borderRadius='lg'
+        _hover={{bg:'blue.400'}}
+        fontSize='xl'
+        borderWidth='1px'
+        fontWeight= 'semibold' mr='-5px' px={2} 
+            onClick={onOpen}> Login </Button>}
 
-            </div>
-            </div>
+            <Menu>
+              <Flex mb='10px' p='10px'>
+                  {notifications && (data.accountType == 'collector') ? <Indicator label={notifications.length} inline size={22}>
+                  <Link to={notifLink}><BellIcon color={'white'} boxSize='33px'/></Link>
+                  </Indicator>:<></>}
+                  {notifications && (data.accountType =='expert') ? <Indicator label={notifications.length} inline size={22}>
+                  <Link to={notifLink}><BellIcon color={'white'} boxSize='33px'/></Link>
+                  </Indicator>:<></>}
+                  {boardNotifications && (data.accountType == 'board') ? <Indicator label={boardNotifications.length} inline size={22}>
+                  <Link to={boardnotifLink}><BellIcon color={'white'} boxSize='33px'/></Link>
+                  </Indicator>:<></>}
+              </Flex>
+           </Menu>
+           
+            <Button style = {{padding:8}} onClick={()=>connectWebsite()}>{connected? "MetaMask":"MetaMask"} </Button> 
+           
 
-            <li>
-            {/* {(isLoggedIn && (data.accountType == 'admin' | data.accountType == 'collector' | data.accountType == 'expert' )) 
-            ?  */}
             
-            <button style = {{padding:8}}
-            className="enableEthereumButton text-black" onClick={()=>connectWebsite()}>
-                  {connected? "MetaMask":"MetaMask"}
-                </button> 
-              </li>
+             </HStack>
+           
+             <Modal  isOpen={isOpen} onClose={onClose} >
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>
+                  Log In
+                  <ModalCloseButton />
+                </ModalHeader>
+                <ModalBody>
+                  <form>
+                    <FormControl>
+                      <FormLabel>Email</FormLabel>
+                      <Input type='email'  mb='2' onChange={(e) => setLoginEmail(e.target.value)}/>
+                      <FormLabel>Password</FormLabel>
+                      <Input type='password' onChange={(e) => setLoginPassword(e.target.value)} />
+                    </FormControl>
+                  </form>
+                </ModalBody>
+                <ModalFooter>
+                  <Button type="submit" colorScheme='blue' mr='7' borderRadius='xl' 
+                  onClick={async(e) =>{
+                  e.preventDefault();
+                  await login();
+                  onClose()}}> Submit </Button>
 
-
-
-            
-        </ul>
-      </nav>
-
-        {/* // <div className='text-black text-bold text-right mr-10 text-sm'>
-        //   {currAddress !== "0x" ? "Connected to":"Not Connected. Please login to view NFTs"} 
-        {currAddress !== "0x" ? (currAddress.substring(0,15)+'...'):""}
-        // </div> */}
+                  <Button onClick={onClose} borderRadius='xl'>Close</Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
       </div>
       
     );

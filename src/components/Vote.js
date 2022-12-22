@@ -21,6 +21,8 @@ import ReqCard from "./ReqCard";
 import { LoginContext } from './LoginContext'
 import firebase from "firebase/compat/app"
 import 'firebase/compat/firestore';
+import { Button, FormControl, FormLabel, Input, Radio, RadioGroup, Select, Stack, Text } from '@chakra-ui/react'
+import { Flex, Heading } from "@chakra-ui/react";
 
 const Vote = () => {
     const [ allData, setAllData ] = useState();
@@ -157,87 +159,63 @@ const addVoteToFirebase = async() =>{
         
         setStatus('');
         setFileURL('');
-       // window.location.replace('/')
+       //window.location.replace('/')
     }
     catch(e) {
         alert( "Upload error" + e )
         console.log("Error: " + e)
     }
   }
+  console.log('vote',details)
+  
+  const hiddenFileInput = React.useRef(null);
+  const handleClick = event => {
+    hiddenFileInput.current.click();
+  };
+
     
   return (
-       <div>
-<h1 class = "mt-20 text-black text-5xl text-center">Voting Form</h1>
+  <Flex flexDir='column' align='center' justify='center' mb={10}>     
+    <Stack direction='column' borderWidth='3px'mt={8} boxShadow='2xl' w='600px' h='50%' px='50px' py='40px'>
+      <Heading mb='30px'>Expert Voting Form</Heading> 
+    <Text  fontSize={'18px'}>Is The Collection Legitimate?<strong> Vote Yes or No</strong></Text> 
+      <RadioGroup onChange={setVote} value={vote}>
+      <Stack direction='row'>
+        <Radio value='Yes'>Yes</Radio>
+        <Radio value='No'>No</Radio>
+      </Stack>
+    </RadioGroup>
 
+    <br/>
+    <FormControl>
+
+
+    <FormLabel fontWeight='bold'>Status</FormLabel>
+    <Select placeholder='Select Collection Status' value = {status} onChange = {(e) => setStatus(e.target.value)}>
+      <option value='Tier 1'>Tier 1 - Not legitimate </option>
+      <option value='Tier 2'>Tier 2 - Legitimacy Not Clear</option>
+      <option value='Tier 3'>Tier 3 - Legitimate</option>
+      <option value='Tier 4'>Tier 4 - Legitimacy Very Clear</option>
+      <option value='Tier 5'>Tier 5 - Completely Legitimate</option>
+    </Select>
+
+    <FormLabel  fontWeight='bold'>Additional Details</FormLabel>
+      <Input  type='text' value = {details} onChange = {(e) => setDetails(e.target.value)} mb={4}/>
+
+      <FormLabel  fontWeight='bold'>Verification File</FormLabel>
+      <Button bg='blue.900' _hover={{bg:'blue.700'}} _focus={{bg:'blue.700'}} mb={2}fontWeight='semibold' color='white' onClick={handleClick}>Upload Document</Button>
+      <Input borderWidth='0px' style={{display:'none'}} ref={hiddenFileInput} type='file'  onChange = {OnChangeFile}/> 
+
+    </FormControl>
+  
+    <br />
+      <Button alignSelf={'center'} disabled={!fileURL} onClick={uploadToBlockchain}> Submit Vote</Button>       
+       </Stack>
        
-    
-    <div style={{position:'relative'}}>
-      <div style={{position:'absolute',left:'32%',top:'2rem',padding:40,border:'2px solid black',marginTop:20}}>
-    <h1 style = {{fontSize:44,marginBottom:30,color:'black'}}> Submit Verification Details</h1>  
-
-    <div>
-      <p style = {{fontSize:20,marginBottom:2,color:'black'}}>Is Collection Legitimate? Vote Yes or No</p>
-    <label class = 'mt-20 text-black text-2xl text-center mr-2' for="yes">Yes</label> 
-    <input 
-    type = "radio"
-    value = "Yes"
-    name = "vote"
-    onChange = {e => setVote(e.target.value)} />
-    </div>
-
-    <br />
-    
-    <div>
-    <label class = 'mt-4 text-black text-2xl text-center mr-2' for="no">No</label> 
-    <input
-    style={{marginLeft:7}}
-    type = "radio"
-    value = "No"
-    name = "vote"
-    onChange = {e => setVote(e.target.value)} />
-    </div>
-
-    <br />
-    
-    <div>
-    <label style={{fontSize:20,color:'black'}} for="status">Status</label>
-    <input 
-    name = "status"
-    type = "text"
-    value = {status}
-    onChange = {(e) => setStatus(e.target.value)}
-    style = {{margin: 10, color:'black',border: '2px solid black', borderRadius:999, padding:8,marginLeft:20}}
-    ></input>
-    </div>
-
-    <br />
-
-
-    <label style={{fontSize:20,color:'black'}} for="details">Additional Details</label>
-    <textarea 
-    name = "details"
-    type = "text"
-    value = {details}
-    onChange = {(e) => setDetails(e.target.value)}
-    style = {{marginBottom: 35, color:'black',border:'2px solid black',backgroundColor:'white'}}
-    ></textarea>
-
-    <br />
-    
-    <label style={{fontSize:20,color:'black',marginRight:30}} for="details">Verification File</label>
-    <input style={{marginBottom:50, color:'black'}}type={"file"} onChange={OnChangeFile}></input>
-       
-    <br />
-      <button onClick={uploadToBlockchain}
-      disabled = {!(status && fileURL && vote)}
-      style={{border:'3px solid black', marginTop:15, padding:10,borderRadius:999}}> Submit Vote</button>
-       </div> 
-       
-       </div>
-       
-    </div>
+    </Flex>
     
   )
 }
 
 export default Vote
+

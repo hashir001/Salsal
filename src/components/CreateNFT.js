@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import CreateNFTCard from "./CreateNFTCard";
 import CreationCard from "./CreationCard";
 import '../style1.css'
+import { Button, Flex, Heading } from "@chakra-ui/react";
 
 
 export default function CreateNFT() {
@@ -125,25 +126,15 @@ async function listNFT(e) {
 }
     
   return (
-       <div className="wrapper">
-        <ul>
+       <Flex flexDir={'column'} align='center'>
+        <Heading fontSize='50px' mt='50px' letterSpacing='tight' fontWeight='semibold' color='blue.900'>Create NFT</Heading>
         {(data) ? data.map((value) => (
-          <div>
-            <CreationCard collectionData = {value}/>
-            <button onClick={listNFT}
-            style={{
-                border:'3px solid black', 
-                marginTop:75, 
-                padding:20,
-                position:'relative',
-                left:'40%',
-                borderRadius:999
-                }}> Create NFT </button>
-          </div>
+          <Flex mt='60px' flexDir={'column'}>
+           <img style={{width:'550px',height:'550px'}} class="rounded-t-lg" src={value.NFTImageURL} alt=""/>
+            <Button fontWeight='normal' mt='20px'  _hover={{bg:'blue.700'}}onClick={listNFT} alignSelf='center' bg='blue.900' fontSize={'18px'} color='white'> Create NFT </Button>
+          </Flex>
         )):null}
-      </ul>
-
-       </div> 
+       </Flex> 
   )
 }
 

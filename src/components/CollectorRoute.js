@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { LoginContext } from './LoginContext'
-import { useEffect, useState, useContext } from 'react';
+import { useContext } from 'react';
 
 const CollectorRoute = () => {
   const { data, setData } = useContext(LoginContext);

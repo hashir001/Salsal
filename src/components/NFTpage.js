@@ -45,7 +45,6 @@ async function getNFTData(tokenId) {
     console.log(item);
     updateData(item);
     setIfDataFetched(true);
-    console.log("address", addr)
     updateCurrAddress(addr);
 }
 
@@ -97,9 +96,6 @@ async function buyNFT(tokenId) {
                         Price: <span className="">{tokenData.price + " ETH"}</span>
                     </div>
                     <div>
-                        Owner: <span className="text-sm">{tokenData.owner}</span>
-                    </div>
-                    <div>
                         Seller: <span className="text-sm">{tokenData.seller}</span>
                     </div>
                     <div>
@@ -111,16 +107,18 @@ async function buyNFT(tokenId) {
                     <div>
                         Status: <span className="text-sm">{tokenData.status}</span>
                     </div>
-                    <div>
-                        Verification Details: <span className="text-sm">{tokenData.details}</span>
-                    </div>
-
-                    <div>
-                    { currAddress == tokenData.owner || currAddress == tokenData.seller ?
-                        <button disable = {!(data.accountType === 'collector' && !(data.address === '0x'))} className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded text-sm" onClick={() => buyNFT(tokenId)}>Buy this NFT</button>
-                        : <div className="text-emerald-700">You are the owner of this NFT</div>
-                    }
+                    {console.log('Owner',tokenData.owner)}
+                       { console.log('Curr',currAddress)  }                 
+                        { console.log('Seller',tokenData.seller)}
                     
+                    <div>
+                    { currAddress == currAddress == tokenData.seller ?
+                         <div className="text-emerald-700">You are the owner of this NFT</div>
+                         :
+                         <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded text-sm" 
+                        onClick={() => buyNFT(tokenId)}>Buy this NFT</button>
+                    }
+                     {/* disable = {!(data.accountType === 'collector' && !(data.address === '0x'))} */}
                     <div className="text-green text-center mt-3">{message}</div>
                     </div>
                 </div>

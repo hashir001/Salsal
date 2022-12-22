@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    background-color: #fff;
+    
     /* background-color:rgb(34, 33, 33) ; */
     
 }
@@ -31,15 +31,6 @@ html, body {
     /* background-image:linear-gradient(rgb(34, 33, 33),rgb(34, 33, 33)); */
     background-size: cover;
     background-position:center
-}
-.navbar{
-    width: 85%;
-    margin: auto;
-    padding: 35px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
 }
 .dropdown-content {
     display: none;

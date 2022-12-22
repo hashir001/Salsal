@@ -39,7 +39,8 @@ import {
     useDisclosure
   } from '@chakra-ui/react'
 import {  AvatarBadge, AvatarGroup } from '@chakra-ui/react'
-export default function Profile () {
+
+export default function ExpertProfile () {
     const { isOpen, onOpen, onClose } = useDisclosure()
 const { data, setData } = useContext(LoginContext);
     const currentUser = useAuth();
@@ -53,73 +54,53 @@ const { data, setData } = useContext(LoginContext);
     const [imgurl, setImgUrl] = useState('')
 
     const [ name, setName ] = useState('');
+    const [ specialty, setSpecialty ] = useState('');
+    const [ experience, setExperience ] = useState('');
+    
     const [ img, setImg ] = useState(null);
     let docuRef=''
     
     {currentUser?.uid? docuRef = doc(db, 'Accounts',currentUser.uid):<></>}
 
+    
     let { id } = useParams();
 
     let docRef = doc(db, 'Accounts',id)
 
+   
+
+
+    const collRef = collection(db, "Notifications");
+
+    const q = query(collRef, where("unseen","==","yes"),where("email","==",data.email))
+    const [ notifications, setNotifications ] = useState();
+
     useEffect(()=>{
-        onSnapshot(docRef, (doc) =>{
-            setUserName(doc.data().name)   
-            setAbout(doc.data().about)
-            setImgUrl(doc.data().profileImgUrl)
-    })},[])
+      onSnapshot(docRef, (doc) =>{
+          setUserName(doc.data().name)   
+          setAbout(doc.data().about)
+          setSpecialty(doc.data().specialty)
+          setExperience(doc.data().experience)
+          setImgUrl(doc.data().profileImgUrl)
+        })
+
+        onSnapshot(q, (snapshot) =>{
+          setNotifications(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })))})
+  },[])
 
 
-    async function getNFTData(tokenId) {
-        const ethers = require("ethers");
-        let sumPrice = 0;
-        //After adding your Hardhat network to your metamask, this code will get providers and signers
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const addr = await signer.getAddress();
+let notifLength;
 
-        //Pull the deployed contract instance
-        let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+if(notifications !== undefined){
+  console.log('length',notifications.length) 
+  notifLength = notifications.length
+}
 
-        //create an NFT Token
-        let transaction = await contract.getMyNFTs()
-
-        /*
-        * Below function takes the metadata from tokenURI and the data returned by getMyNFTs() contract function
-        * and creates an object of information that is to be displayed
-        */
-        
-        const items = await Promise.all(transaction.map(async i => {
-            const tokenURI = await contract.tokenURI(i.tokenId);
-            
-            let meta = await axios.get(tokenURI);
-            meta = meta.data;
-
-            let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
-            let item = {
-                price,
-                tokenId: i.tokenId.toNumber(),
-                seller: i.seller,
-                owner: i.owner,
-                image: meta.image,
-                name: meta.name,
-                description: meta.description,
-            }
-            sumPrice += Number(price);
-            return item;
-        }))
-
-        updateData(items);
-        updateFetched(true);
-        updateAddress(addr);
-        updateTotalPrice(sumPrice.toPrecision(3));
-    }
 
     const params = useParams();
     const tokenId = params.tokenId;
-    if(!dataFetched)
-        getNFTData(tokenId);
 
+console.log('notis',notifications)
 
     const updateValues = async() => {
         const imageRef = ref(storage, `profile images/${v4()}`);
@@ -129,7 +110,9 @@ const { data, setData } = useContext(LoginContext);
             await updateDoc(docRef,{
             profileImgUrl: downloadURL,
             name: name,
-            about: about
+            about: about,
+            specialty: specialty,
+            experience:experience
             })
         })
         }
@@ -140,7 +123,7 @@ const { data, setData } = useContext(LoginContext);
     };
 
 
-    console.log()
+    console.log('yo where they at')
     return (
         <Flex flexDir={'column'}>
             <Flex flexDir={'column'} align='center' mt={10}>
@@ -149,16 +132,27 @@ const { data, setData } = useContext(LoginContext);
             {currentUser?.email === data.email?<Button onClick={onOpen}>Edit Profile</Button>:null}
             <Heading style={{color:'black'}} mt='40px' fontWeight={'normal'}> About</Heading>
             <Flex borderWidth='1px' boxShadow={'md'} padding='10px' width='30%' mt='14px'><Text fontSize='18px' style={{color:'black'}} mt='10px' fontWeight={'normal'}> {about}</Text></Flex>
-            </Flex>
-      
 
-            <Flex flexDir={'column'} align='center' mt={20}>
-            <Heading fontWeight={'semibold'}>Your NFTs</Heading>
-            <Flex flexDir='row'>
-                {thedata.map((value, index) => {
-                return <NFTTile data={value} key={index}></NFTTile>;
-                })}
-            </Flex>
+            <Heading style={{color:'black'}} mt='40px' fontWeight={'normal'}> Specialty</Heading>
+            <Flex borderWidth='1px' boxShadow={'md'} padding='10px' width='30%' mt='14px'><Text fontSize='18px' style={{color:'black'}} mt='10px' fontWeight={'normal'}> {specialty}</Text></Flex>
+
+            
+            <Heading style={{color:'black'}} mt='40px' fontWeight={'normal'}> Experience</Heading>
+            <Flex borderWidth='1px' boxShadow={'md'} padding='10px' width='30%' mt='14px'><Text fontSize='18px' style={{color:'black'}} mt='10px' fontWeight={'normal'}> {experience}</Text></Flex>
+
+            
+            
+            <Heading style={{color:'black'}} mt='40px' fontWeight={'normal'}> Notifications</Heading>
+            {(notifications) ? notifications.map((value) => (
+              <Flex bg='green.100' flexDir={'column'} key={v4()} borderWidth='2px' mb='10px' p='10px'>
+                <Text>{value.details}</Text>
+                <Text>{notifLength}</Text>
+                <Button bg='green.200' borderColor={'green.400'}>Mark As Read</Button>
+              </Flex>
+            )):null}
+          </Flex>            
+
+      
         <Modal
         isOpen={isOpen}
         onClose={onClose}
@@ -179,6 +173,16 @@ const { data, setData } = useContext(LoginContext);
             </FormControl>
 
             <FormControl mt={4}>
+              <FormLabel>Specialty</FormLabel>
+              <Input  onChange = {e => setSpecialty(e.target.value)} />
+            </FormControl>
+
+            <FormControl mt={4}>
+              <FormLabel>Experience</FormLabel>
+              <Input  onChange = {e => setExperience(e.target.value)} />
+            </FormControl>
+
+            <FormControl mt={4}>
                 <FormLabel>Profile Image</FormLabel>
                 <Button bg='blue.900' _hover={{bg:'blue.700'}}_focus={{bg:'blue.700'}}mb={2} color='white' onClick={handleClick3}>Upload Image</Button>
                 <Input borderWidth='0px' style={{display:'none'}} ref={hiddenFileInput3} type='file' onChange = {(e) => {setImg(e.target.files[0])}}/>
@@ -195,6 +199,6 @@ const { data, setData } = useContext(LoginContext);
         </ModalContent>
       </Modal>
             </Flex>
-        </Flex>
+      
     )
 };
