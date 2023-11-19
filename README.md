@@ -29,13 +29,6 @@ After doing so, paste your wallet address from MetaMask and you will receive the
 You are ready to perform transactions on the Blockchain.
 You can now navigate to the site using the following link and sign in as a Collector or Expert: https://agur-ab416.web.app/
 
-To set up the repository and run the marketplace locally, run the below
-```bash
-git clone https://github.com/hashir001/AGUR.git
-cd AGUR
-npm install
-npm start
-```
 
 #### 5. Collector
 1. To upload a collection: From the Home Page, navigate to the Collector dropdown and select Upload Collection. 
