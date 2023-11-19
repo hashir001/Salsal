@@ -1,4 +1,4 @@
-# AGUR
+# Salsal
 
 Live Site: https://agur-ab416.web.app/
 
